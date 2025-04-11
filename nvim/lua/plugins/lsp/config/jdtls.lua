@@ -68,28 +68,29 @@ function start_jdtls()
         return
     end
 
+    vim.notify(home, vim.log.levels.INFO)
+    vim.notify(project_name, vim.log.levels.INFO)
+    vim.notify(workspace_dir, vim.log.levels.INFO)
+    vim.notify(workspace_dir, vim.log.levels.INFO)
+    vim.notify(root_dir, vim.log.levels.INFO)
+
     -- Configuration for jdtls
     local config = {
         cmd = {
-            "java", -- Path to Java executable
+            home .. "/.dotfiles/java-lsp/bin/jdtls", -- Path to Java executable
             "-javaagent:" .. lombok_path, -- Add Lombok agent
             "-Declipse.application=org.eclipse.jdt.ls.core.id1",
             "-Dosgi.bundles.defaultStartLevel=4",
             "-Declipse.product=org.eclipse.jdt.ls.core.product",
-            "-Dlog.protocol=true",
+            -- "-Dlog.protocol=true",
             "-Dlog.level=ALL",
             "-Xms1g",
             "--add-modules=ALL-SYSTEM",
-            "--add-opens",
-            "java.base/java.util=ALL-UNNAMED",
-            "--add-opens",
-            "java.base/java.lang=ALL-UNNAMED",
-            "-jar",
-            vim.fn.glob(home .. "/.local/share/nvim/mason/packages/jdtls/plugins/org.eclipse.equinox.launcher_*.jar"),
-            "-configuration",
-            home .. "/.local/share/nvim/mason/packages/jdtls/config_linux", -- Adjust based on OS (e.g., config_mac, config_win)
-            "-data",
-            workspace_dir,
+            "--add-opens java.base/java.util=ALL-UNNAMED",
+            "--add-opens java.base/java.lang=ALL-UNNAMED",
+            "-jar " .. home .. "/.dotfiles/java-lsp/plugins/org.eclipse.equinox.launcher_*.jar",
+            "-configuration " .. home .. "/.dotfiles/java-lsp/config_linux", -- Adjust based on OS (e.g., config_mac, config_win)
+            "-data " .. workspace_dir,
         },
         root_dir = root_dir,
         settings = {
