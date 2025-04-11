@@ -3,9 +3,14 @@ return {
     dependencies = {
         "williamboman/mason-lspconfig.nvim", -- Bridge between Mason and LSP-Config
         "WhoIsSethDaniel/mason-tool-installer.nvim",
+        "jay-babu/mason-nvim-dap.nvim",
     },
     config = function()
-        require("mason").setup()
+        require("mason").setup({
+            ui = {
+                border = "rounded",
+            },
+        })
         require("mason-lspconfig").setup({
             ensure_installed = { -- Ensure these servers are installed automatically
                 "rust_analyzer",
@@ -16,6 +21,7 @@ return {
                 "jsonls",
                 "yamlls",
                 "lemminx",
+                "lua_ls",
             },
             automatic_installation = true,
         })
@@ -27,6 +33,12 @@ return {
             "shellcheck",
             "docker-compose-language-service",
             "dockerfile-language-server",
+        })
+        require("mason-nvim-dap").setup({
+            ensure_installed = {
+                "java-debug-adapter",
+                "java-test",
+            },
         })
 
         -- Default setup for all LSPs
