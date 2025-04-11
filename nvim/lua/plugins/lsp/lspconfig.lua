@@ -19,6 +19,31 @@ return {
                 -- See `:help vim.lsp.*` for documentation on any of the below functions
                 local opts = { buffer = ev.buf, silent = true }
 
+                -- -- Set vim motion for <Space> + c + h to show code documentation about the code the cursor is currently over if available
+                -- vim.keymap.set("n", "<leader>ch", vim.lsp.buf.hover, { desc = "[C]ode [H]over Documentation" })
+                -- -- Set vim motion for <Space> + c + d to go where the code/variable under the cursor was defined
+                -- vim.keymap.set("n", "<leader>cd", vim.lsp.buf.definition, { desc = "[C]ode Goto [D]efinition" })
+                -- -- Set vim motion for <Space> + c + a for display code action suggestions for code diagnostics in both normal and visual mode
+                -- vim.keymap.set({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, { desc = "[C]ode [A]ctions" })
+                -- -- Set vim motion for <Space> + c + r to display references to the code under the cursor
+                -- vim.keymap.set(
+                --     "n",
+                --     "<leader>cr",
+                --     require("telescope.builtin").lsp_references,
+                --     { desc = "[C]ode Goto [R]eferences" }
+                -- )
+                -- -- Set vim motion for <Space> + c + i to display implementations to the code under the cursor
+                -- vim.keymap.set(
+                --     "n",
+                --     "<leader>ci",
+                --     require("telescope.builtin").lsp_implementations,
+                --     { desc = "[C]ode Goto [I]mplementations" }
+                -- )
+                -- -- Set a vim motion for <Space> + c + <Shift>R to smartly rename the code under the cursor
+                -- vim.keymap.set("n", "<leader>cR", vim.lsp.buf.rename, { desc = "[C]ode [R]ename" })
+                -- -- Set a vim motion for <Space> + c + <Shift>D to go to where the code/object was declared in the project (class file)
+                -- vim.keymap.set("n", "<leader>cD", vim.lsp.buf.declaration, { desc = "[C]ode Goto [D]eclaration" })
+
                 -- set keybinds
                 opts.desc = "Show LSP references"
                 keymap.set("n", "gR", "<cmd>Telescope lsp_references<CR>", opts) -- show definition, references
@@ -41,11 +66,11 @@ return {
                 opts.desc = "Smart rename"
                 keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts) -- smart rename
 
-                opts.desc = "Show buffer diagnostics"
-                keymap.set("n", "<leader>D", "<cmd>Telescope diagnostics bufnr=0<CR>", opts) -- show  diagnostics for file
-
-                opts.desc = "Show line diagnostics"
-                keymap.set("n", "<leader>d", vim.diagnostic.open_float, opts) -- show diagnostics for line
+                -- opts.desc = "Show buffer diagnostics"
+                -- keymap.set("n", "<leader>D", "<cmd>Telescope diagnostics bufnr=0<CR>", opts) -- show  diagnostics for file
+                --
+                -- opts.desc = "Show line diagnostics"
+                -- keymap.set("n", "<leader>d", vim.diagnostic.open_float, opts) -- show diagnostics for line
 
                 opts.desc = "Go to previous diagnostic"
                 keymap.set("n", "[d", vim.diagnostic.goto_prev, opts) -- jump to previous diagnostic in buffer
@@ -61,13 +86,42 @@ return {
             end,
         })
 
-        -- Change the Diagnostic symbols in the sign column (gutter)
-        -- (not in youtube nvim video)
-        local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
-        for type, icon in pairs(signs) do
-            local hl = "DiagnosticSign" .. type
-            vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
+        local default_diagnostic_config = {
+            signs = {
+                active = true,
+                values = {
+                    { name = "DiagnosticSignError", text = " " },
+                    { name = "DiagnosticSignWarn", text = " " },
+                    { name = "DiagnosticSignHint", text = "󰠠 " },
+                    { name = "DiagnosticSignInfo", text = " " },
+                },
+            },
+            virtual_text = false,
+            update_in_insert = false,
+            underline = true,
+            severity_sort = true,
+            float = {
+                focusable = true,
+                style = "minimal",
+                border = "rounded",
+                source = "always",
+                header = "",
+                prefix = "",
+            },
+        }
+        vim.diagnostic.config(default_diagnostic_config)
+
+        for _, sign in ipairs(vim.tbl_get(vim.diagnostic.config(), "signs", "values") or {}) do
+            vim.fn.sign_define(sign.name, { texthl = sign.name, text = sign.text, numhl = sign.name })
         end
+
+        -- -- Change the Diagnostic symbols in the sign column (gutter)
+        -- -- (not in youtube nvim video)
+        -- local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
+        -- for type, icon in pairs(signs) do
+        --     local hl = "DiagnosticSign" .. type
+        --     vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
+        -- end
 
         require("plugins.lsp.config.rust") -- Load Rust LSP configuration
         require("plugins.lsp.config.go") -- Load Go LSP configuration
