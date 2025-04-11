@@ -1,0 +1,36 @@
+set number
+set relativenumber
+set tabstop=4
+set shiftwidth=4
+set expandtab
+set autoindent
+set ignorecase
+set smartcase
+set cursorline
+set clipboard="unnamedplus"
+set noswapfile
+
+set scrolloff=5
+
+set incsearch
+
+map Q gq
+
+nnoremap <silent> <C-j> :m .+1<CR>==
+nnoremap <silent> <C-k> :m .-2<CR>==
+inoremap <silent> <C-j> <Esc>:m .+1<CR>==gi
+inoremap <silent> <C-k> <Esc>:m .-2<CR>==gi
+vnoremap <silent> <C-j> :m '>+1<CR>gv=gv
+vnoremap <silent> <C-k> :m '<-2<CR>gv=gv
+
+" Initialize Vim-Plug
+call plug#begin('~/.vim/plugged')  " On Unix/Linux/macOS
+" call plug#begin('~/vimfiles/plugged')  " On Windows  
+
+" Highlight copied text
+Plug 'machakann/vim-highlightedyank'
+" Commentary plugin
+Plug 'tpope/vim-commentary'
+
+" Finalize plugin setup
+call plug#end()
