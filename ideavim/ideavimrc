@@ -11,7 +11,11 @@ set cursorline
 set scrolloff=5
 set incsearch
 set noswapfile
-" set timeoutlen=200
+
+" " Which-Key plugin configurations
+" set which-key
+" set notimeout
+" set timeoutlen=5000
 
 " Keybindings
 map Q gq
@@ -40,30 +44,37 @@ nnoremap <Space>gd :action GotoDeclaration<CR>
 nnoremap <Space>/ :action CommentByLineComment<CR>
 inoremap <Space>/ :action CommentByLineComment<CR>
 vnoremap <Space>/ :action CommentByLineComment<CR>
-nnoremap <Space>cr :action ReformatCode<CR>
+nnoremap <Space>cf :action ReformatCode<CR>
 nnoremap <Space>co :action OptimizeImports<CR>
 nnoremap <Space>ci :action ImplementMethods<CR>
 
 " Refactoring
-nnoremap <Space>rr :action RefactorRename<CR>
-nnoremap <Space>rm :action RefactorMove<CR>
+nnoremap <Space>re :action RenameElement<CR>
+nnoremap <Space>rf :action RenameFile<CR>
 nnoremap <Space>rp :action ReplaceInPath<CR>
 
 " Debugging
 nnoremap <Space>tb :action ToggleLineBreakpoint<CR>
-nnoremap <Space>ds :action StartDebug<CR>
+vnoremap <Space>tb :action ToggleLineBreakpoint<CR>
+nnoremap <Space>ds :action Debug<CR>
 nnoremap <Space>dn :action StepOver<CR>
 nnoremap <Space>di :action StepInto<CR>
-nnoremap <Space>dr :action ResumeProgram<CR>
+nnoremap <Space>dr :action Resume<CR>
 nnoremap <Space>de :action EvaluateExpression<CR>
 nnoremap <Space>dt :action RunToCursor<CR>
 
 " Build and Run
 nnoremap <Space>cc :action CompileProject<CR>
+nnoremap <Space>ab :action BuildArtifact<CR>
+nnoremap <C-r>r :action Run<CR>
+nnoremap <C-r>c :action RunConfiguration<CR>
+nnoremap <C-r>s :action Stop<CR>
+nnoremap <C-r>t :action RerunTests<CR>
+nnoremap <C-r>f :action RerunFailedTests<CR>
+nnoremap <C-r>C :action RunCoverage<CR>
 
 " Terminal
 nnoremap <M-Enter> :action ActivateTerminalToolWindow<CR>
-nnoremap <C-Esc> :action HideActiveWindow<CR>
 
 
 " " Refactoring
@@ -86,6 +97,7 @@ Plug 'ajmwagar/ideavim-easymotion'
 Plug 'tpope/vim-surround'          " Add/change/delete surroundings (quotes, brackets, etc.)
 Plug 'airblade/vim-gitgutter'      " Show Git diff signs in the gutter
 Plug 'preservim/nerdtree'          " File explorer (may not work fully in IdeaVim)
+Plug 'TheBlob42/idea-which-key'
 
 " Finalize plugin setup
 call plug#end()
