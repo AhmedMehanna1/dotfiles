@@ -29,8 +29,13 @@ call plug#begin('~/.vim/plugged')  " On Unix/Linux/macOS
 
 " Highlight copied text
 Plug 'machakann/vim-highlightedyank'
-" Commentary plugin
+" Commentary plugin (use IntelliJ's built-in commenting instead)
 Plug 'tpope/vim-commentary'
+Plug 'ajmwagar/ideavim-easymotion'
+Plug 'tpope/vim-surround'          " Add/change/delete surroundings (quotes, brackets, etc.)
+Plug 'airblade/vim-gitgutter'      " Show Git diff signs in the gutter
+Plug 'preservim/nerdtree'          " File explorer (may not work fully in IdeaVim)
+Plug 'TheBlob42/idea-which-key'
 
 " Finalize plugin setup
 call plug#end()
