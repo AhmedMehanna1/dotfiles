@@ -42,11 +42,28 @@ nnoremap <Space>gd :action GotoDeclaration<CR>
 
 " Code Editing
 nnoremap <Space>/ :action CommentByLineComment<CR>
-inoremap <Space>/ :action CommentByLineComment<CR>
 vnoremap <Space>/ :action CommentByLineComment<CR>
 nnoremap <Space>cf :action ReformatCode<CR>
 nnoremap <Space>co :action OptimizeImports<CR>
 nnoremap <Space>ci :action ImplementMethods<CR>
+
+" Bookmarking
+nnoremap <Space>bt :action ToggleBookmark<CR>
+nnoremap <Space>bm :action ToggleBookmarkWithMnemonic<CR>
+nnoremap <Space>be :action EditBookmark<CR>
+nnoremap <Space>bs :action ShowBookmarks<CR>
+
+" Window Management
+nnoremap <Space>sv :action SplitVertically<CR>
+nnoremap <Space>sh :action SplitHorizontally<CR>
+nnoremap <silent> <C-h> :action NextSplitter<CR>
+nnoremap <silent> <C-l> :action PrevSplitter<CR>
+inoremap <silent> <C-h> :action NextSplitter<CR>
+inoremap <silent> <C-l> :action PrevSplitter<CR>
+vnoremap <silent> <C-h> :action NextSplitter<CR>
+vnoremap <silent> <C-l> :action PrevSplitter<CR>
+nnoremap <Space>ee :action ActivateProjectToolWindow<CR>
+nnoremap <Space>ef :action SelectInProjectView<CR>
 
 " Refactoring
 nnoremap <Space>re :action RenameElement<CR>
@@ -66,15 +83,15 @@ nnoremap <Space>dt :action RunToCursor<CR>
 " Build and Run
 nnoremap <Space>cc :action CompileProject<CR>
 nnoremap <Space>ab :action BuildArtifact<CR>
-nnoremap <C-r>r :action Run<CR>
-nnoremap <C-r>c :action RunConfiguration<CR>
-nnoremap <C-r>s :action Stop<CR>
-nnoremap <C-r>t :action RerunTests<CR>
-nnoremap <C-r>f :action RerunFailedTests<CR>
-nnoremap <C-r>C :action RunCoverage<CR>
+nnoremap <Space>xr :action Run<CR>
+nnoremap <Space>xc :action RunConfiguration<CR>
+nnoremap <Space>xs :action Stop<CR>
+nnoremap <Space>xt :action RerunTests<CR>
+nnoremap <Space>xf :action RerunFailedTests<CR>
+nnoremap <Space>xC :action RunCoverage<CR>
 
 " Terminal
-nnoremap <M-Enter> :action ActivateTerminalToolWindow<CR>
+nnoremap <C-Enter> :action ActivateTerminalToolWindow<CR>
 
 
 " " Refactoring
