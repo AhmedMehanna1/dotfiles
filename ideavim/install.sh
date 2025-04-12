@@ -1,4 +1,4 @@
-ln -vfs ~/.dotfiles/vim/vimrc ~/.vimrc
+ln -vfs ~/.dotfiles/ideavim/ideavimrc ~/.ideavimrc
 
 if ! [ -f ~/.vim/autoload/plug.vim ]; then
     curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
