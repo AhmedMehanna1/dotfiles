@@ -4,7 +4,7 @@ return {
     dependencies = {
         "hrsh7th/cmp-nvim-lsp",
         { "antosha417/nvim-lsp-file-operations", config = true },
-        { "folke/neodev.nvim", opts = {} },
+        { "folke/neodev.nvim",                   opts = {} },
     },
     config = function()
         -- import lspconfig plugin
@@ -96,7 +96,7 @@ return {
                     { name = "DiagnosticSignInfo", text = " " },
                 },
             },
-            virtual_text = false,
+            virtual_text = true,
             update_in_insert = false,
             underline = true,
             severity_sort = true,
@@ -123,13 +123,13 @@ return {
         --     vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
         -- end
 
-        require("plugins.lsp.config.rust") -- Load Rust LSP configuration
-        require("plugins.lsp.config.go") -- Load Go LSP configuration
-        require("plugins.lsp.config.c_cpp") -- Load C/C++ LSP configuration
+        require("plugins.lsp.config.rust")   -- Load Rust LSP configuration
+        require("plugins.lsp.config.go")     -- Load Go LSP configuration
+        require("plugins.lsp.config.c_cpp")  -- Load C/C++ LSP configuration
         require("plugins.lsp.config.python") -- Load Python LSP configuration
-        require("plugins.lsp.config.json") -- Load JSON, LSP configuration
-        require("plugins.lsp.config.yaml") -- Load YAML LSP configuration
-        require("plugins.lsp.config.xml") -- Load XML LSP configuration
-        require("plugins.lsp.config.bash") -- Load BASH LSP configuration
+        require("plugins.lsp.config.json")   -- Load JSON, LSP configuration
+        require("plugins.lsp.config.yaml")   -- Load YAML LSP configuration
+        require("plugins.lsp.config.xml")    -- Load XML LSP configuration
+        require("plugins.lsp.config.bash")   -- Load BASH LSP configuration
     end,
 }
