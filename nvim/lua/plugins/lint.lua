@@ -42,8 +42,8 @@ return {
                     "-c",
                     config_path, -- Specify the configuration file
                     "--format",
-                    "plain", -- Output format
-                    "-", -- Read from stdin
+                    "plain",     -- Output format
+                    "-",         -- Read from stdin
                 }
             end,
             stdin = true,
