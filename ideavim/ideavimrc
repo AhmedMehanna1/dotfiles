@@ -38,6 +38,7 @@ nnoremap <Space>fr :action RecentFiles<CR>
 " Code Navigation
 nnoremap <Space>ss :action FileStructurePopup<CR>
 nnoremap <Space>gi :action GotoImplementation<CR>
+nnoremap <Space>gs :action GotoSuperMethod<CR>
 nnoremap <Space>gd :action GotoDeclaration<CR>
 nnoremap K :action QuickImplementations<CR>
 
