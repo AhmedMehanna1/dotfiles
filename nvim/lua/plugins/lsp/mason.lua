@@ -1,5 +1,5 @@
 return {
-    "williamboman/mason.nvim", -- Mason for managing LSP servers and tools
+    "williamboman/mason.nvim",               -- Mason for managing LSP servers and tools
     dependencies = {
         "williamboman/mason-lspconfig.nvim", -- Bridge between Mason and LSP-Config
         "WhoIsSethDaniel/mason-tool-installer.nvim",
