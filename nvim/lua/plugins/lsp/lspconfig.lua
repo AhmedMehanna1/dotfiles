@@ -2,134 +2,174 @@ return {
     "neovim/nvim-lspconfig",
     event = { "BufReadPre", "BufNewFile" },
     dependencies = {
-        "hrsh7th/cmp-nvim-lsp",
-        { "antosha417/nvim-lsp-file-operations", config = true },
-        { "folke/neodev.nvim",                   opts = {} },
+        "mason.nvim",
+        "williamboman/mason-lspconfig.nvim",
     },
-    config = function()
-        -- import lspconfig plugin
-        local lspconfig = require("lspconfig")
-
-        local keymap = vim.keymap -- for conciseness
-
-        vim.api.nvim_create_autocmd("LspAttach", {
-            group = vim.api.nvim_create_augroup("UserLspConfig", {}),
-            callback = function(ev)
-                -- Buffer local mappings.
-                -- See `:help vim.lsp.*` for documentation on any of the below functions
-                local opts = { buffer = ev.buf, silent = true }
-
-                -- -- Set vim motion for <Space> + c + h to show code documentation about the code the cursor is currently over if available
-                -- vim.keymap.set("n", "<leader>ch", vim.lsp.buf.hover, { desc = "[C]ode [H]over Documentation" })
-                -- -- Set vim motion for <Space> + c + d to go where the code/variable under the cursor was defined
-                -- vim.keymap.set("n", "<leader>cd", vim.lsp.buf.definition, { desc = "[C]ode Goto [D]efinition" })
-                -- -- Set vim motion for <Space> + c + a for display code action suggestions for code diagnostics in both normal and visual mode
-                -- vim.keymap.set({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, { desc = "[C]ode [A]ctions" })
-                -- -- Set vim motion for <Space> + c + r to display references to the code under the cursor
-                -- vim.keymap.set(
-                --     "n",
-                --     "<leader>cr",
-                --     require("telescope.builtin").lsp_references,
-                --     { desc = "[C]ode Goto [R]eferences" }
-                -- )
-                -- -- Set vim motion for <Space> + c + i to display implementations to the code under the cursor
-                -- vim.keymap.set(
-                --     "n",
-                --     "<leader>ci",
-                --     require("telescope.builtin").lsp_implementations,
-                --     { desc = "[C]ode Goto [I]mplementations" }
-                -- )
-                -- -- Set a vim motion for <Space> + c + <Shift>R to smartly rename the code under the cursor
-                -- vim.keymap.set("n", "<leader>cR", vim.lsp.buf.rename, { desc = "[C]ode [R]ename" })
-                -- -- Set a vim motion for <Space> + c + <Shift>D to go to where the code/object was declared in the project (class file)
-                -- vim.keymap.set("n", "<leader>cD", vim.lsp.buf.declaration, { desc = "[C]ode Goto [D]eclaration" })
-
-                -- set keybinds
-                opts.desc = "Show LSP references"
-                keymap.set("n", "gR", "<cmd>Telescope lsp_references<CR>", opts) -- show definition, references
-
-                opts.desc = "Go to declaration"
-                keymap.set("n", "gD", vim.lsp.buf.declaration, opts) -- go to declaration
-
-                opts.desc = "Show LSP definitions"
-                keymap.set("n", "gd", "<cmd>Telescope lsp_definitions<CR>", opts) -- show lsp definitions
-
-                opts.desc = "Show LSP implementations"
-                keymap.set("n", "gi", "<cmd>Telescope lsp_implementations<CR>", opts) -- show lsp implementations
-
-                opts.desc = "Show LSP type definitions"
-                keymap.set("n", "gt", "<cmd>Telescope lsp_type_definitions<CR>", opts) -- show lsp type definitions
-
-                opts.desc = "See available code actions"
-                keymap.set({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, opts) -- see available code actions, in visual mode will apply to selection
-
-                opts.desc = "Smart rename"
-                keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts) -- smart rename
-
-                -- opts.desc = "Show buffer diagnostics"
-                -- keymap.set("n", "<leader>D", "<cmd>Telescope diagnostics bufnr=0<CR>", opts) -- show  diagnostics for file
-                --
-                -- opts.desc = "Show line diagnostics"
-                -- keymap.set("n", "<leader>d", vim.diagnostic.open_float, opts) -- show diagnostics for line
-
-                opts.desc = "Go to previous diagnostic"
-                keymap.set("n", "[d", vim.diagnostic.goto_prev, opts) -- jump to previous diagnostic in buffer
-
-                opts.desc = "Go to next diagnostic"
-                keymap.set("n", "]d", vim.diagnostic.goto_next, opts) -- jump to next diagnostic in buffer
-
-                opts.desc = "Show documentation for what is under cursor"
-                keymap.set("n", "K", vim.lsp.buf.hover, opts) -- show documentation for what is under cursor
-
-                opts.desc = "Restart LSP"
-                keymap.set("n", "<leader>rs", ":LspRestart<CR>", opts) -- mapping to restart lsp if necessary
-            end,
-        })
-
-        local default_diagnostic_config = {
+    opts = {
+        diagnostics = {
+            underline = true,
+            update_in_insert = false,
+            virtual_text = {
+                spacing = 4,
+                source = "if_many",
+                prefix = "●",
+            },
+            severity_sort = true,
             signs = {
-                active = true,
-                values = {
-                    { name = "DiagnosticSignError", text = " " },
-                    { name = "DiagnosticSignWarn", text = " " },
-                    { name = "DiagnosticSignHint", text = "󰠠 " },
-                    { name = "DiagnosticSignInfo", text = " " },
+                text = {
+                    [vim.diagnostic.severity.ERROR] = require("utils.icons").diagnostics.Error,
+                    [vim.diagnostic.severity.WARN] = require("utils.icons").diagnostics.Warn,
+                    [vim.diagnostic.severity.HINT] = require("utils.icons").diagnostics.Hint,
+                    [vim.diagnostic.severity.INFO] = require("utils.icons").diagnostics.Info,
                 },
             },
-            virtual_text = true,
-            update_in_insert = false,
-            underline = true,
-            severity_sort = true,
-            float = {
-                focusable = true,
-                style = "minimal",
-                border = "rounded",
-                source = "always",
-                header = "",
-                prefix = "",
+        },
+        inlay_hints = {
+            enabled = true,
+        },
+        capabilities = {},
+        format = {
+            formatting_options = nil,
+            timeout_ms = nil,
+        },
+        servers = {
+            lua_ls = {
+                settings = {
+                    Lua = {
+                        runtime = {
+                            version = "LuaJIT",
+                        },
+                        diagnostics = {
+                            globals = { "vim" },
+                        },
+                        workspace = {
+                            library = {
+                                vim.env.VIMRUNTIME,
+                                "${3rd}/luv/library",
+                            },
+                            checkThirdParty = false,
+                        },
+                        telemetry = {
+                            enable = false,
+                        },
+                        completion = {
+                            callSnippet = "Replace",
+                        },
+                    },
+                },
             },
-        }
-        vim.diagnostic.config(default_diagnostic_config)
+            pyright = {},
+            gopls = {},
+            ts_ls = {},
+        },
+        setup = {},
+    },
+    config = function(_, opts)
+        local Util = require("utils")
+        Util.format.register(Util.lsp.formatter())
 
-        for _, sign in ipairs(vim.tbl_get(vim.diagnostic.config(), "signs", "values") or {}) do
-            vim.fn.sign_define(sign.name, { texthl = sign.name, text = sign.text, numhl = sign.name })
+        Util.lsp.on_attach(function(client, buffer)
+            require("utils.lsp-keymaps").on_attach(client, buffer)
+        end)
+
+        local register_capability = vim.lsp.handlers["client/registerCapability"]
+
+        vim.lsp.handlers["client/registerCapability"] = function(err, res, ctx)
+            local ret = register_capability(err, res, ctx)
+            local client_id = ctx.client_id
+            local client = vim.lsp.get_client_by_id(client_id)
+            local buffer = vim.api.nvim_get_current_buf()
+            require("utils.lsp-keymaps").on_attach(client, buffer)
+            return ret
         end
 
-        -- -- Change the Diagnostic symbols in the sign column (gutter)
-        -- -- (not in youtube nvim video)
-        -- local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
-        -- for type, icon in pairs(signs) do
-        --     local hl = "DiagnosticSign" .. type
-        --     vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
-        -- end
+        if opts.inlay_hints.enabled then
+            Util.lsp.on_attach(function(client, buffer)
+                if client.supports_method("textDocument/inlayHint") then
+                    Util.toggle.inlay_hints(buffer, true)
+                end
+            end)
+        end
 
-        require("plugins.lsp.config.rust")   -- Load Rust LSP configuration
-        require("plugins.lsp.config.go")     -- Load Go LSP configuration
-        require("plugins.lsp.config.c_cpp")  -- Load C/C++ LSP configuration
-        require("plugins.lsp.config.python") -- Load Python LSP configuration
-        require("plugins.lsp.config.json")   -- Load JSON, LSP configuration
-        require("plugins.lsp.config.yaml")   -- Load YAML LSP configuration
-        require("plugins.lsp.config.xml")    -- Load XML LSP configuration
-        require("plugins.lsp.config.bash")   -- Load BASH LSP configuration
+        if type(opts.diagnostics.virtual_text) == "table" and opts.diagnostics.virtual_text.prefix == "icons" then
+            opts.diagnostics.virtual_text.prefix = vim.fn.has("nvim-0.10.0") == 0 and "●"
+                or function(diagnostic)
+                    local icons = require("utils.icons").diagnostics
+                    for d, icon in pairs(icons) do
+                        if diagnostic.severity == vim.diagnostic.severity[d:upper()] then
+                            return icon
+                        end
+                    end
+                end
+        end
+
+        vim.diagnostic.config(vim.deepcopy(opts.diagnostics))
+
+        local servers = opts.servers
+        local has_cmp, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
+        local capabilities = vim.tbl_deep_extend(
+            "force",
+            {},
+            vim.lsp.protocol.make_client_capabilities(),
+            has_cmp and cmp_nvim_lsp.default_capabilities() or {},
+            opts.capabilities or {}
+        )
+
+        local function setup(server)
+            local server_opts = vim.tbl_deep_extend("force", {
+                capabilities = vim.deepcopy(capabilities),
+            }, servers[server] or {})
+
+            if opts.setup[server] then
+                if opts.setup[server](server, server_opts) then
+                    return
+                end
+            elseif opts.setup["*"] then
+                if opts.setup["*"](server, server_opts) then
+                    return
+                end
+            end
+            require("lspconfig")[server].setup(server_opts)
+        end
+
+        local have_mason, mlsp = pcall(require, "mason-lspconfig")
+        local all_mslp_servers = {}
+        if have_mason then
+            -- Safe way to get server mappings
+            local ok, mappings = pcall(function()
+                return require("mason-lspconfig.mappings.server").lspconfig_to_package
+            end)
+            if ok and mappings then
+                all_mslp_servers = vim.tbl_keys(mappings)
+            else
+                -- Fallback for newer versions or if mappings don't exist
+                all_mslp_servers = mlsp.get_available_servers()
+            end
+        end
+
+        local ensure_installed = {}
+        for server, server_opts in pairs(servers) do
+            if server_opts then
+                server_opts = server_opts == true and {} or server_opts
+                if server_opts.mason == false or not vim.tbl_contains(all_mslp_servers, server) then
+                    setup(server)
+                else
+                    ensure_installed[#ensure_installed + 1] = server
+                end
+            end
+        end
+
+        if have_mason then
+            mlsp.setup({ ensure_installed = ensure_installed, handlers = { setup } })
+        end
+
+        -- Updated deprecated tsserver handling
+        if Util.lsp.get_config("denols") and Util.lsp.get_config("ts_ls") then
+            local is_deno = require("lspconfig.util").root_pattern("deno.json", "deno.jsonc")
+            Util.lsp.disable("ts_ls", is_deno)
+            Util.lsp.disable("denols", function(root_dir)
+                return not is_deno(root_dir)
+            end)
+        end
     end,
 }

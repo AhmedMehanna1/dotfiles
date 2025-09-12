@@ -1,102 +1,113 @@
-vim.api.nvim_create_autocmd({
-    "BufEnter",
-    "BufWinEnter",
-}, {
-    pattern = { "*.md", "*.json", "*.mdx", "*.agx", "*.svg" },
-    callback = function()
-        vim.cmd("set concealleavel=0")
-    end,
+local function augroup(name)
+  return vim.api.nvim_create_augroup("lazyvim_" .. name, { clear = true })
+end
+
+-- Check if we need to reload the file when it changed
+vim.api.nvim_create_autocmd({ "FocusGained", "TermClose", "TermLeave" }, {
+  group = augroup("checktime"),
+  callback = function()
+    if vim.o.buftype ~= "nofile" then
+      vim.cmd("checktime")
+    end
+  end,
 })
 
-vim.api.nvim_create_autocmd({
-    "BufLeave",
-    "BufWinLeave",
-}, {
-    pattern = { "*.md", "*.json", "*.mdx", "*.agx", "*.svg" },
-    callback = function()
-        vim.cmd("set concealleavel=3")
-    end,
-})
-
--- Disable nvim-cmp for Markdown files
-vim.api.nvim_create_autocmd("FileType", {
-    pattern = "markdown",
-    callback = function()
-        local cmp = require("cmp")
-
-        -- manual complete
-        cmp.setup({
-            completion = {
-                autocomplete = false,
-                completeopt = "menu,menuone,noinsert",
-            },
-            mapping = cmp.mapping.preset.insert({
-                ["<Tab>"] = cmp.mapping.complete(),
-            }),
-        })
-    end,
-})
-
-vim.api.nvim_create_augroup("AutoLintAndFormat", { clear = true })
-
--- Rust
-vim.api.nvim_create_autocmd("BufWritePost", {
-    group = "AutoLintAndFormat",
-    pattern = "*.rs",
-    command = "!cargo fmt && cargo clippy",
-})
-
--- Go
-vim.api.nvim_create_autocmd("BufWritePost", {
-    group = "AutoLintAndFormat",
-    pattern = "*.go",
-    command = "!gofmt -w % && golangci-lint run",
-})
-
--- C/C++
-vim.api.nvim_create_autocmd("BufWritePost", {
-    group = "AutoLintAndFormat",
-    pattern = { "*.c", "*.cpp", "*.h", "*.hpp" },
-    command = "!clang-format -i % && cppcheck %",
-})
-
--- Java
-vim.api.nvim_create_autocmd("BufWritePost", {
-    group = "AutoLintAndFormat",
-    pattern = "*.java",
-    command = "!google-java-format -i % && checkstyle %",
-})
-
--- Python
-vim.api.nvim_create_autocmd("BufWritePost", {
-    group = "AutoLintAndFormat",
-    pattern = "*.py",
-    command = "!black % && isort % && flake8 %",
-})
-
--- JavaScript/TypeScript
-vim.api.nvim_create_autocmd("BufWritePost", {
-    group = "AutoLintAndFormat",
-    pattern = { "*.js", "*.ts", "*.jsx", "*.tsx" },
-    command = "!prettier --write % && eslint_d %",
-})
-
--- Highlight yanked text
+-- Highlight on yank
 vim.api.nvim_create_autocmd("TextYankPost", {
-    group = vim.api.nvim_create_augroup("HighlightYank", { clear = true }),
-    callback = function()
-        -- Highlight the yanked text for 200 milliseconds
-        vim.highlight.on_yank({
-            higroup = "IncSearch", -- Use the IncSearch highlight group
-            timeout = 200,         -- Duration of the highlight in milliseconds
-        })
-    end,
+  group = augroup("highlight_yank"),
+  callback = function()
+    vim.highlight.on_yank()
+  end,
 })
 
--- Setup our JDTLS server any time we open up a java file
-vim.cmd([[
-    augroup jdtls_lsp
-        autocmd!
-        autocmd FileType java lua require'config.jdtls'.setup_jdtls()
-    augroup end
-]])
+-- Resize splits if window got resized
+vim.api.nvim_create_autocmd({ "VimResized" }, {
+  group = augroup("resize_splits"),
+  callback = function()
+    local current_tab = vim.fn.tabpagenr()
+    vim.cmd("tabdo wincmd =")
+    vim.cmd("tabnext " .. current_tab)
+  end,
+})
+
+-- Go to last location when opening a buffer
+vim.api.nvim_create_autocmd("BufReadPost", {
+  group = augroup("last_loc"),
+  callback = function(event)
+    local exclude = { "gitcommit" }
+    local buf = event.buf
+    if vim.tbl_contains(exclude, vim.bo[buf].filetype) or vim.b[buf].lazyvim_last_loc then
+      return
+    end
+    vim.b[buf].lazyvim_last_loc = true
+    local mark = vim.api.nvim_buf_get_mark(buf, '"')
+    local lcount = vim.api.nvim_buf_line_count(buf)
+    if mark[1] > 0 and mark[1] <= lcount then
+      pcall(vim.api.nvim_win_set_cursor, 0, mark)
+    end
+  end,
+})
+
+-- Close some filetypes with <q>
+vim.api.nvim_create_autocmd("FileType", {
+  group = augroup("close_with_q"),
+  pattern = {
+    "PlenaryTestPopup",
+    "help",
+    "lspinfo",
+    "man",
+    "notify",
+    "qf",
+    "query",
+    "spectre_panel",
+    "startuptime",
+    "tsplayground",
+    "neotest-output",
+    "checkhealth",
+    "neotest-summary",
+    "neotest-output-panel",
+  },
+  callback = function(event)
+    vim.bo[event.buf].buflisted = false
+    vim.keymap.set("n", "q", "<cmd>close<cr>", { buffer = event.buf, silent = true })
+  end,
+})
+
+-- Wrap and check for spell in text filetypes
+vim.api.nvim_create_autocmd("FileType", {
+  group = augroup("wrap_spell"),
+  pattern = { "gitcommit", "markdown" },
+  callback = function()
+    vim.opt_local.wrap = true
+    vim.opt_local.spell = true
+  end,
+})
+
+-- Auto create dir when saving a file, in case some intermediate directory does not exist
+vim.api.nvim_create_autocmd({ "BufWritePre" }, {
+  group = augroup("auto_create_dir"),
+  callback = function(event)
+    if event.match:match("^%w%w+://") then
+      return
+    end
+    local file = vim.loop.fs_realpath(event.match) or event.match
+    vim.fn.mkdir(vim.fn.fnamemodify(file, ":p:h"), "p")
+  end,
+})
+
+-- Disable other auto-formatting sources that might conflict
+vim.api.nvim_create_autocmd("BufWritePre", {
+  group = vim.api.nvim_create_augroup("DisableConflictingFormatters", { clear = true }),
+  callback = function()
+    -- Disable LSP formatting if conform is handling it
+    local clients = vim.lsp.get_clients({ bufnr = 0 })
+    for _, client in ipairs(clients) do
+      if client.server_capabilities.documentFormattingProvider then
+        client.server_capabilities.documentFormattingProvider = false
+      end
+      if client.server_capabilities.documentRangeFormattingProvider then
+        client.server_capabilities.documentRangeFormattingProvider = false
+      end
+    end
+  end,
+})
