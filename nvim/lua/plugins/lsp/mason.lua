@@ -10,6 +10,8 @@ return {
             "flake8",
             "rust-analyzer",
             "jdtls",
+            "java-debug-adapter",
+            "java-test",
             "google-java-format",
             "checkstyle",
             "black",

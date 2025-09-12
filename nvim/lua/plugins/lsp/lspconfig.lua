@@ -69,7 +69,7 @@ return {
         Util.format.register(Util.lsp.formatter())
 
         Util.lsp.on_attach(function(client, buffer)
-            require("utils.lsp-keymaps").on_attach(client, buffer)
+            require("plugins.lsp.configs.keymaps").on_attach(client, buffer)
         end)
 
         local register_capability = vim.lsp.handlers["client/registerCapability"]
@@ -79,7 +79,7 @@ return {
             local client_id = ctx.client_id
             local client = vim.lsp.get_client_by_id(client_id)
             local buffer = vim.api.nvim_get_current_buf()
-            require("utils.lsp-keymaps").on_attach(client, buffer)
+            require("plugins.lsp.configs.keymaps").on_attach(client, buffer)
             return ret
         end
 

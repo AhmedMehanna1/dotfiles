@@ -14,9 +14,9 @@ return {
             },
             server = {
                 on_attach = function(client, bufnr)
-                    require("plugins.lsp.keymaps").on_attach(client, bufnr)
+                    require("plugins.lsp.configs.keymaps").on_attach(client, bufnr)
                 end,
-                default_settings = {
+                settings = {
                     ["rust-analyzer"] = {
                         cargo = {
                             allFeatures = true,
@@ -25,7 +25,11 @@ return {
                                 enable = true,
                             },
                         },
-                        checkOnSave = true,
+                        check = {
+                            command = "clippy",
+                            extraArgs = { "-all-features" },
+                            allTargets = false,
+                        },
                         procMacro = {
                             enable = true,
                             ignored = {
@@ -44,10 +48,11 @@ return {
                 },
             },
             dap = {
-                adapter = require('rustaceanvim.config').get_codelldb_adapter(
-                    vim.fn.stdpath('data') .. '/mason/bin/codelldb',
-                    vim.fn.stdpath('data') .. '/mason/packages/codelldb/extension/lldb/lib/liblldb'
-                    .. (vim.fn.has('mac') == 1 and '.dylib' or '.so')
+                adapter = require("rustaceanvim.config").get_codelldb_adapter(
+                    vim.fn.stdpath("data") .. "/mason/bin/codelldb",
+                    vim.fn.stdpath("data")
+                        .. "/mason/packages/codelldb/extension/lldb/lib/liblldb"
+                        .. (vim.fn.has("mac") == 1 and ".dylib" or ".so")
                 ),
             },
         }
