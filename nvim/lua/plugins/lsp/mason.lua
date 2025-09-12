@@ -1,60 +1,70 @@
 return {
-    "williamboman/mason.nvim",               -- Mason for managing LSP servers and tools
-    dependencies = {
-        "williamboman/mason-lspconfig.nvim", -- Bridge between Mason and LSP-Config
-        "WhoIsSethDaniel/mason-tool-installer.nvim",
-        "jay-babu/mason-nvim-dap.nvim",
-    },
-    config = function()
-        require("mason").setup({
-            ui = {
-                border = "rounded",
-            },
-        })
-        require("mason-lspconfig").setup({
-            ensure_installed = { -- Ensure these servers are installed automatically
-                "rust_analyzer",
-                "gopls",
-                "clangd",
-                "jdtls",
-                "pyright",
-                "jsonls",
-                "yamlls",
-                "lemminx",
-                "lua_ls",
-            },
-            automatic_installation = true,
-        })
-        require("mason-tool-installer").setup({
-            "stylua", -- lua formatter
+    "williamboman/mason.nvim",
+    cmd = "Mason",
+    keys = { { "<leader>cm", "<cmd>Mason<cr>", desc = "Mason" } },
+    build = ":MasonUpdate",
+    opts = {
+        ensure_installed = {
+            "stylua",
+            "shfmt",
+            "flake8",
+            "rust-analyzer",
+            "jdtls",
+            "google-java-format",
+            "checkstyle",
+            "black",
+            "isort",
+            "prettierd",
+            "eslint_d",
             "lua-language-server",
+            "pyright",
+            "gopls",
             "typescript-language-server",
-            "bash-language-server",
-            "shellcheck",
-            "docker-compose-language-service",
-            "dockerfile-language-server",
-        })
-        require("mason-nvim-dap").setup({
-            ensure_installed = {
-                "java-debug-adapter",
-                "java-test",
-            },
-        })
+            "codelldb",
+        },
+    },
+    config = function(_, opts)
+        require("mason").setup(opts)
+        local mr = require("mason-registry")
 
-        -- Default setup for all LSPs
-        local lspconfig = require("lspconfig")
-        local capabilities = require("cmp_nvim_lsp").default_capabilities()
+        -- Improved installation handling to avoid race conditions
+        mr:on("package:install:success", function()
+            vim.defer_fn(function()
+                require("lazy.core.handler.event").trigger({
+                    event = "FileType",
+                    buf = vim.api.nvim_get_current_buf(),
+                })
+            end, 100)
+        end)
 
-        -- Default options for all LSPs
-        local default_opts = {
-            capabilities = capabilities,
-        }
+        local function ensure_installed()
+            for _, tool in ipairs(opts.ensure_installed) do
+                local p = mr.get_package(tool)
+                if not p:is_installed() then
+                    -- Check if already installing to avoid race condition
+                    local installing = false
+                    for _, pkg in ipairs(mr.get_installed_packages()) do
+                        if pkg.name == tool and pkg:is_installing() then
+                            installing = true
+                            break
+                        end
+                    end
 
-        -- Automatically set up all installed LSPs
-        require("mason-lspconfig").setup_handlers({
-            function(server_name)
-                lspconfig[server_name].setup(default_opts)
-            end,
-        })
+                    if not installing then
+                        vim.notify("Installing " .. tool, vim.log.levels.INFO)
+                        p:install()
+                    end
+                end
+            end
+        end
+
+        -- Defer installation to avoid conflicts
+        if mr.refresh then
+            mr.refresh(function()
+                vim.defer_fn(ensure_installed, 100)
+            end)
+        else
+            vim.defer_fn(ensure_installed, 100)
+        end
     end,
 }
