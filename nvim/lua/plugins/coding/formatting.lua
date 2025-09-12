@@ -27,9 +27,26 @@ return {
       json = { { "prettierd", "prettier" } },
       go = { "goimports", "gofmt" },
     },
-    -- Remove format_on_save - we'll handle it in ftplugin
     formatters = {
       injected = { options = { ignore_errors = true } },
+
+      -- Java formatter
+      ["google-java-format"] = {
+        prepend_args = { "--aosp" }, -- optional: 4 spaces, 100 line length
+      },
+
+      -- JS/TS/JSON formatter overrides
+      prettierd = {
+        prepend_args = { "--tab-width", "4" },
+      },
+      prettier = {
+        prepend_args = { "--tab-width", "4" },
+      },
+
+      -- Rustfmt (respects rustfmt.toml if present)
+      rustfmt = {
+        prepend_args = { "--edition", "2021" },
+      },
     },
   },
 }
