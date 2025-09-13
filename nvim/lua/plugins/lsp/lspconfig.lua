@@ -59,8 +59,188 @@ return {
                 },
             },
             pyright = {},
-            gopls = {},
+            gopls = {
+                settings = {
+                    gopls = {
+                        gofumpt = true,
+                        codelenses = {
+                            gc_details = false,
+                            generate = true,
+                            regenerate_cgo = true,
+                            run_govulncheck = true,
+                            test = true,
+                            tidy = true,
+                            upgrade_dependency = true,
+                            vendor = true,
+                        },
+                        hints = {
+                            assignVariableTypes = true,
+                            compositeLiteralFields = true,
+                            compositeLiteralTypes = true,
+                            constantValues = true,
+                            functionTypeParameters = true,
+                            parameterNames = true,
+                            rangeVariableTypes = true,
+                        },
+                        analyses = {
+                            fieldalignment = true,
+                            nilness = true,
+                            unusedparams = true,
+                            unusedwrite = true,
+                            useany = true,
+                        },
+                        usePlaceholders = true,
+                        completeUnimported = true,
+                        staticcheck = true,
+                        directoryFilters = { "-.git", "-.vscode", "-.idea", "-.vscode-test", "-node_modules" },
+                        semanticTokens = true,
+                    },
+                },
+            },
             ts_ls = {},
+            -- Rust
+            rust_analyzer = {
+                settings = {
+                    ["rust-analyzer"] = {
+                        cargo = {
+                            allFeatures = true,
+                            loadOutDirsFromCheck = true,
+                            runBuildScripts = true,
+                        },
+                        checkOnSave = {
+                            allFeatures = true,
+                            command = "clippy",
+                            extraArgs = { "--no-deps" },
+                        },
+                        procMacro = {
+                            enable = true,
+                            ignored = {
+                                ["async-trait"] = { "async_trait" },
+                                ["napi-derive"] = { "napi" },
+                                ["async-recursion"] = { "async_recursion" },
+                            },
+                        },
+                    },
+                },
+            },
+            -- C/C++
+            clangd = {
+                keys = {
+                    { "<leader>cR", "<cmd>ClangdSwitchSourceHeader<cr>", desc = "Switch Source/Header (C/C++)" },
+                },
+                root_dir = function(fname)
+                    return require("lspconfig.util").root_pattern(
+                        "Makefile",
+                        "configure.ac",
+                        "configure.in",
+                        "config.h.in",
+                        "meson.build",
+                        "meson_options.txt",
+                        "build.ninja"
+                    )(fname) or require("lspconfig.util").root_pattern("compile_commands.json", "compile_flags.txt")(
+                        fname
+                    ) or require("lspconfig.util").find_git_ancestor(fname)
+                end,
+                capabilities = {
+                    offsetEncoding = { "utf-16" },
+                },
+                cmd = {
+                    "clangd",
+                    "--background-index",
+                    "--clang-tidy",
+                    "--header-insertion=iwyu",
+                    "--completion-style=detailed",
+                    "--function-arg-placeholders",
+                    "--fallback-style=llvm",
+                },
+                init_options = {
+                    usePlaceholders = true,
+                    completeUnimported = true,
+                    clangdFileStatus = true,
+                },
+            },
+            -- C#
+            omnisharp = {
+                cmd = { "omnisharp" },
+                settings = {
+                    FormattingOptions = {
+                        EnableEditorConfigSupport = true,
+                        OrganizeImports = true,
+                    },
+                    MsBuild = {
+                        LoadProjectsOnDemand = nil,
+                    },
+                    RoslynExtensionsOptions = {
+                        EnableAnalyzersSupport = nil,
+                        EnableImportCompletion = nil,
+                        AnalyzeOpenDocumentsOnly = nil,
+                    },
+                    Sdk = {
+                        IncludePrereleases = true,
+                    },
+                },
+            },
+            -- Kotlin
+            kotlin_language_server = {
+                settings = {
+                    kotlin = {
+                        completion = {
+                            snippets = { enabled = true },
+                        },
+                        hover = { enabled = true },
+                        hints = {
+                            typeHints = true,
+                            parameterHints = true,
+                            chainingHints = true,
+                        },
+                    },
+                },
+            },
+            -- Web technologies
+            html = {
+                filetypes = { "html", "twig", "hbs" },
+            },
+            cssls = {
+                settings = {
+                    css = {
+                        validate = true,
+                        lint = {
+                            unknownAtRules = "ignore",
+                        },
+                    },
+                    less = {
+                        validate = true,
+                    },
+                    scss = {
+                        validate = true,
+                    },
+                },
+            },
+            emmet_ls = {
+                filetypes = {
+                    "html",
+                    "typescriptreact",
+                    "javascriptreact",
+                    "css",
+                    "sass",
+                    "scss",
+                    "less",
+                    "svelte",
+                },
+            },
+            angularls = {},
+            -- Docker
+            dockerls = {
+                settings = {
+                    docker = {
+                        languageserver = {
+                            formatter = {
+                                ignoreMultilineInstructions = true,
+                            },
+                        },
+                    },
+                },
+            },
         },
         setup = {},
     },
@@ -171,5 +351,38 @@ return {
                 return not is_deno(root_dir)
             end)
         end
+
+        -- Java-specific LSP handling - ensure JDTLS attaches to all Java files
+        vim.api.nvim_create_autocmd("FileType", {
+            pattern = "java",
+            callback = function(args)
+                local buf = args.buf
+
+                -- Give nvim-java time to attach, then check
+                vim.defer_fn(function()
+                    local clients = vim.lsp.get_active_clients({ bufnr = buf })
+                    local jdtls_attached = false
+
+                    for _, client in ipairs(clients) do
+                        if client.name == "jdtls" then
+                            jdtls_attached = true
+                            break
+                        end
+                    end
+
+                    if not jdtls_attached then
+                        -- Try to manually attach JDTLS
+                        local jdtls_clients = vim.lsp.get_active_clients({ name = "jdtls" })
+                        if #jdtls_clients > 0 then
+                            -- JDTLS is running but not attached to this buffer
+                            vim.lsp.buf_attach_client(buf, jdtls_clients[1].id)
+                        else
+                            -- No JDTLS client at all
+                            vim.notify("JDTLS not running. Use :JavaLspRestart or restart Neovim.", vim.log.levels.WARN)
+                        end
+                    end
+                end, 1000) -- Wait 1 second for nvim-java to do its thing
+            end,
+        })
     end,
 }

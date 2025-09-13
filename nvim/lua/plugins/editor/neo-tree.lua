@@ -80,6 +80,16 @@ return {
             bind_to_cwd = false,
             follow_current_file = { enabled = true },
             use_libuv_file_watcher = true,
+            filtered_items = {
+                visible = true, -- Show hidden files by default
+                show_hidden_count = true,
+                hide_dotfiles = false,
+                hide_gitignored = false,
+                hide_by_name = {},
+                hide_by_pattern = {},
+                always_show = { ".env", ".gitignore" },
+                never_show = {},
+            },
         },
         window = {
             mappings = {
