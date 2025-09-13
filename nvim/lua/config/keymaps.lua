@@ -25,12 +25,7 @@ keymap.set("i", "<C-k>", "<esc><cmd>m .-2<cr>==gi", { desc = "Move up" })
 keymap.set("v", "<C-j>", ":m '>+1<cr>gv=gv", { desc = "Move down" })
 keymap.set("v", "<C-k>", ":m '<-2<cr>gv=gv", { desc = "Move up" })
 -- Keep Alt versions for alternative
-keymap.set("n", "<A-j>", "<cmd>m .+1<cr>==", { desc = "Move down" })
-keymap.set("n", "<A-k>", "<cmd>m .-2<cr>==", { desc = "Move up" })
-keymap.set("i", "<A-j>", "<esc><cmd>m .+1<cr>==gi", { desc = "Move down" })
-keymap.set("i", "<A-k>", "<esc><cmd>m .-2<cr>==gi", { desc = "Move up" })
-keymap.set("v", "<A-j>", ":m '>+1<cr>gv=gv", { desc = "Move down" })
-keymap.set("v", "<A-k>", ":m '<-2<cr>gv=gv", { desc = "Move up" })
+-- Alt+j/k previously duplicated move-lines; keep Ctrl+j/k only
 
 -- Buffers
 keymap.set("n", "<S-h>", "<cmd>bprevious<cr>", { desc = "Prev buffer" })
@@ -63,17 +58,38 @@ end, { desc = "Save, close buffer, and return to previous" })
 
 -- Alternative: Create a custom :wq replacement
 vim.api.nvim_create_user_command("WQ", function()
-    vim.cmd("w")  -- Save
-    local buf_count = #vim.fn.getbufinfo({buflisted = 1})
-    if buf_count > 1 then
-        vim.cmd("bp|bd #")  -- Close buffer but stay in Neovim
+    local buf = vim.api.nvim_get_current_buf()
+    local is_normal = (vim.bo.buftype == "")
+    local can_write = is_normal and vim.bo.modifiable and not vim.bo.readonly
+
+    -- Try to save only when it is a normal, writable file buffer
+    if can_write then
+        pcall(vim.cmd, "silent write")
+    end
+
+    local buflisted = vim.fn.buflisted(buf) == 1
+    local listed_count = #vim.fn.getbufinfo({ buflisted = 1 })
+
+    if buflisted and listed_count > 1 then
+        -- Switch away, then delete the original buffer
+        vim.cmd("bprevious")
+        pcall(vim.cmd, "bdelete " .. buf)
     else
-        vim.cmd("q")        -- Only quit if it's the last buffer
+        -- If more than one window, just close this window; otherwise quit
+        if vim.fn.winnr("$") > 1 then
+            vim.cmd("close")
+        else
+            vim.cmd("quit")
+        end
     end
 end, { desc = "Write and close buffer (like :wq but better)" })
 
 -- Make :wq behave better by creating an abbreviation
 vim.cmd('cnoreabbrev wq WQ')
+
+-- Make :q behave like :wq (save and close buffer) safely
+-- Only when the exact command is ':q', not 'qall', 'qa', or 'q!'
+vim.cmd([[cnoreabbrev <expr> q (getcmdtype() == ':' && getcmdline() ==# 'q' && &buftype == '' && &modifiable && !&readonly) ? 'WQ' : 'q']])
 
 -- Clear search with <esc>
 keymap.set({ "i", "n" }, "<esc>", "<cmd>noh<cr><esc>", { desc = "Escape and clear hlsearch" })
@@ -161,8 +177,15 @@ keymap.set("n", "<A-8>", "8gt", { desc = "Go to tab 8" })
 keymap.set("n", "<A-9>", "9gt", { desc = "Go to tab 9" })
 
 -- Quick next/previous with Alt (using buffers - most common)
-keymap.set("n", "<A-h>", "<cmd>bprevious<cr>", { desc = "Previous buffer" })
-keymap.set("n", "<A-l>", "<cmd>bnext<cr>", { desc = "Next buffer" })
+-- Window splits
+keymap.set("n", "<leader>sv", "<cmd>vsplit<cr>", { desc = "Split window vertical" })
+keymap.set("n", "<leader>sh", "<cmd>split<cr>", { desc = "Split window horizontal" })
+
+-- Resize splits with Alt+hjkl
+keymap.set("n", "<A-h>", "<cmd>vertical resize -2<cr>", { desc = "Decrease window width" })
+keymap.set("n", "<A-l>", "<cmd>vertical resize +2<cr>", { desc = "Increase window width" })
+keymap.set("n", "<A-j>", "<cmd>resize +2<cr>", { desc = "Increase window height" })
+keymap.set("n", "<A-k>", "<cmd>resize -2<cr>", { desc = "Decrease window height" })
 
 -- Navigate between buffers with Alt+arrows (most common workflow)
 keymap.set("n", "<A-Left>", "<cmd>bprevious<cr>", { desc = "Previous buffer" })
@@ -176,22 +199,53 @@ keymap.set("n", "<C-A-Right>", "<cmd>tabnext<cr>", { desc = "Next tab" })
 -- File operations (matching ideavim <Space>f* mappings)
 keymap.set("n", "<leader>ff", function() require("telescope.builtin").find_files() end, { desc = "Find files" })
 keymap.set("n", "<leader>fs", function() require("telescope.builtin").live_grep() end, { desc = "Find in files" })
-keymap.set("n", "<leader>fc", function() require("telescope.builtin").commands() end, { desc = "Find commands" })
+keymap.set("n", "<leader>fc", function()
+    local builtin = require("telescope.builtin")
+
+    local function any_client_supports(method)
+        for _, client in pairs(vim.lsp.get_active_clients()) do
+            if client.supports_method and client:supports_method(method) then
+                return true
+            end
+        end
+        return false
+    end
+
+    local tried_lsp = false
+    if any_client_supports("workspace/symbol") then
+        tried_lsp = true
+        local ok = pcall(builtin.lsp_dynamic_workspace_symbols, { symbols = { "Class" } })
+        if not ok then
+            ok = pcall(builtin.lsp_workspace_symbols, { query = "", symbols = { "Class" } })
+        end
+        if ok then
+            return
+        end
+    end
+
+    -- Fallback (no LSP or it failed): grep for common class keywords
+    builtin.live_grep({
+        default_text = "class ",
+        prompt_title = tried_lsp and "Classes (fallback grep)" or "Classes (grep)",
+    })
+end, { desc = "Find classes in project" })
 keymap.set("n", "<leader>fr", function() require("telescope.builtin").oldfiles() end, { desc = "Recent files" })
 
 -- Code navigation (matching ideavim)
-keymap.set("n", "<leader>ss", function() require("telescope.builtin").lsp_document_symbols() end, { desc = "Document symbols" })
+keymap.set("n", "<leader>ss", function()
+    require("telescope.builtin").lsp_document_symbols({ symbols = { "Method", "Field" } })
+end, { desc = "Document methods/fields" })
 keymap.set("n", "<leader>gi", vim.lsp.buf.implementation, { desc = "Go to implementation" })
 keymap.set("n", "<leader>gs", vim.lsp.buf.type_definition, { desc = "Go to type definition" })
 keymap.set("n", "<leader>gd", vim.lsp.buf.definition, { desc = "Go to definition" })
 keymap.set("n", "<leader>su", function() require("telescope.builtin").lsp_references() end, { desc = "Show usages" })
 
 -- Code editing (matching ideavim) - <leader>/ is now handled by Comment plugin
-keymap.set("n", "<leader>co", function() require("conform").format() end, { desc = "Format code" })
+keymap.set("n", "<leader>co", function() require("utils.code_action").organize() end, { desc = "Organize imports" })
 keymap.set("n", "<leader>ci", vim.lsp.buf.code_action, { desc = "Code actions" })
 
 -- Refactoring (matching ideavim)
-keymap.set("n", "<leader>re", vim.lsp.buf.rename, { desc = "Rename element" })
+keymap.set("n", "<leader>re", function() require("utils.rename").smart() end, { desc = "Rename element" })
 
 -- File tree (matching ideavim <Space>e* mappings)
 keymap.set("n", "<leader>ee", "<cmd>Neotree toggle<cr>", { desc = "Toggle file explorer" })
