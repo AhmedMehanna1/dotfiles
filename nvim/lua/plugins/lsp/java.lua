@@ -1,21 +1,25 @@
 return {
     "mfussenegger/nvim-jdtls",
     ft = { "java" },
-    dependencies = { "williamboman/mason.nvim", "neovim/nvim-lspconfig" },
+    dependencies = {
+        "williamboman/mason.nvim",
+        "neovim/nvim-lspconfig",
+        "mfussenegger/nvim-dap",
+        "rcarriga/nvim-dap-ui",
+    },
     config = function()
         local home = os.getenv("HOME")
         local jdtls_path = home .. "/.local/share/nvim/mason/packages/jdtls"
         local launcher_path = vim.fn.glob(jdtls_path .. "/plugins/org.eclipse.equinox.launcher_*.jar")
         local config_linux = jdtls_path .. "/config_linux"
-        local lombok_path = "/home/ahmed-mehanna/.m2/repository/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar"
+        local lombok_path = home .. "/.m2/repository/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar"
 
-        -- Pick the right Java version automatically
+        -- Detect JAVA_HOME
         local function detect_jdk()
             local java_home = os.getenv("JAVA_HOME")
             if java_home and #java_home > 0 then
                 return java_home
             end
-            -- fallback: use `java` from PATH
             local handle = io.popen("readlink -f $(which java) | sed 's:/bin/java::'")
             if handle then
                 local result = handle:read("*a"):gsub("%s+$", "")
@@ -31,9 +35,21 @@ return {
             return
         end
 
-        -- Workspace directory (one per project)
+        -- Workspace dir (per project)
         local project_name = vim.fn.fnamemodify(vim.fn.getcwd(), ":p:h:t")
         local workspace_dir = home .. "/.local/share/eclipse/" .. project_name
+
+        -- Collect debug + test bundles
+        local bundles = {
+            vim.fn.glob(
+                home
+                    .. "/.local/share/nvim/mason/packages/java-debug-adapter/extension/server/com.microsoft.java.debug.plugin-*.jar"
+            ),
+        }
+        vim.list_extend(
+            bundles,
+            vim.split(vim.fn.glob(home .. "/.local/share/nvim/mason/packages/java-test/extension/server/*.jar"), "\n")
+        )
 
         local config = {
             cmd = {
@@ -57,7 +73,12 @@ return {
                 "-data",
                 workspace_dir,
             },
-            root_dir = require("jdtls.setup").find_root({ "mvnw", "gradlew", "pom.xml", "build.gradle" }),
+            root_dir = require("jdtls.setup").find_root({
+                "mvnw",
+                "gradlew",
+                "pom.xml",
+                "build.gradle",
+            }),
             settings = {
                 java = {
                     home = jdk_home,
@@ -78,28 +99,46 @@ return {
                     implementationsCodeLens = { enabled = true },
                     referencesCodeLens = { enabled = true },
                     references = { includeDecompiledSources = true },
-                    format = { enabled = false },
+                    format = { enabled = false }, -- use google-java-format
                     saveActions = { organizeImports = true },
                 },
             },
             init_options = {
-                bundles = {
-                    vim.fn.glob(
-                        home
-                            .. "/.local/share/nvim/mason/packages/java-debug-adapter/extension/server/com.microsoft.java.debug.plugin-*.jar"
-                    ),
-                },
+                bundles = bundles,
             },
         }
 
-        -- Attach nvim-jdtls
+        -- Start jdtls
         require("jdtls").start_or_attach(config)
 
-        -- Keymaps
+        -- Java-specific keymaps
         local opts = { noremap = true, silent = true }
         vim.keymap.set("n", "<leader>oi", "<cmd>JdtOrganizeImports<CR>", opts)
         vim.keymap.set("n", "<leader>ev", "<cmd>JdtExtractVariable<CR>", opts)
         vim.keymap.set("n", "<leader>ec", "<cmd>JdtExtractConstant<CR>", opts)
         vim.keymap.set("v", "<leader>em", "<Esc><Cmd>JdtExtractMethod<CR>", opts)
+
+        -- Test runner mappings
+        vim.keymap.set("n", "<leader>tc", "<cmd>lua require'jdtls'.test_class()<CR>", opts)
+        vim.keymap.set("n", "<leader>tm", "<cmd>lua require'jdtls'.test_nearest_method()<CR>", opts)
+        vim.keymap.set("n", "<leader>td", "<cmd>lua require'jdtls'.pick_test()<CR>", opts)
+
+        -- Setup DAP UI
+        local dap = require("dap")
+        local dapui = require("dapui")
+        dapui.setup()
+
+        dap.listeners.after.event_initialized["dapui_config"] = function()
+            dapui.open()
+        end
+        dap.listeners.before.event_terminated["dapui_config"] = function()
+            dapui.close()
+        end
+        dap.listeners.before.event_exited["dapui_config"] = function()
+            dapui.close()
+        end
+
+        -- Filter noisy diagnostics
+        require("plugins.lsp.configs.lsp-diagnostics").filter_java()
     end,
 }

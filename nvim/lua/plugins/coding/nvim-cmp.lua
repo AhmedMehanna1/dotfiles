@@ -13,6 +13,7 @@ return {
         local cmp = require("cmp")
         local defaults = require("cmp.config.default")()
         local auto_select = true
+
         return {
             completion = {
                 completeopt = "menu,menuone,noinsert",
@@ -59,9 +60,9 @@ return {
             }),
             sources = cmp.config.sources({
                 { name = "nvim_lsp", priority = 1000 },
-                { name = "luasnip", priority = 900 },
-                { name = "buffer", priority = 500, keyword_length = 3 },
-                { name = "path", priority = 300 },
+                { name = "buffer", priority = 750, keyword_length = 3 },
+                { name = "path", priority = 500 },
+                { name = "luasnip", priority = 250 }, -- moved snippets lower
             }),
             formatting = {
                 format = function(_, item)
@@ -77,7 +78,26 @@ return {
                     hl_group = "CmpGhostText",
                 },
             },
-            sorting = defaults.sorting,
+            sorting = {
+                priority_weight = 2,
+                comparators = {
+                    cmp.config.compare.offset,
+                    cmp.config.compare.exact,
+                    cmp.config.compare.score,
+                    -- de-prioritize snippets
+                    function(entry1, entry2)
+                        if entry1.source.name == "luasnip" then
+                            return false
+                        elseif entry2.source.name == "luasnip" then
+                            return true
+                        end
+                    end,
+                    cmp.config.compare.kind,
+                    cmp.config.compare.sort_text,
+                    cmp.config.compare.length,
+                    cmp.config.compare.order,
+                },
+            },
         }
     end,
     config = function(_, opts)
