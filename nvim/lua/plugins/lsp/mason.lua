@@ -23,6 +23,33 @@ return {
             "gopls",
             "typescript-language-server",
             "codelldb",
+            -- C/C++ support
+            "clangd",
+            "clang-format",
+            "cpptools",
+            -- C# support
+            "omnisharp",
+            "csharpier",
+            -- Kotlin support
+            "kotlin-language-server",
+            "ktlint",
+            -- Docker support (using correct Mason package names)
+            "dockerfile-language-server",
+            -- Web technologies
+            "html-lsp",
+            "css-lsp",
+            "emmet-ls",
+            "angular-language-server",
+            -- Additional formatters
+            "gofumpt",
+            "goimports",
+            "rustfmt",
+            "prettier",
+            -- Debug adapters
+            "debugpy", -- Python debugger
+            "delve", -- Go debugger
+            "js-debug-adapter", -- JavaScript/TypeScript debugger
+            "netcoredbg", -- .NET Core debugger
         },
     },
     config = function(_, opts)

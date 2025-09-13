@@ -179,5 +179,6 @@ end
 M.format = require("utils.format")
 M.lsp = require("utils.lsp")
 M.toggle = require("utils.toggle")
+M.java_debug = require("utils.java-debug")
 
 return M
