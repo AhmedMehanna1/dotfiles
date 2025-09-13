@@ -10,6 +10,8 @@ keymap.set({ "n", "x" }, "<Up>", "v:count == 0 ? 'gk' : 'k'", { expr = true, sil
 -- Move to window using the <ctrl> hjkl keys
 keymap.set("n", "<C-h>", "<C-w>h", { desc = "Go to left window", remap = true })
 keymap.set("n", "<C-l>", "<C-w>l", { desc = "Go to right window", remap = true })
+keymap.set("n", "<C-j>", "<C-w>j", { desc = "Go to left window", remap = true })
+keymap.set("n", "<C-k>", "<C-w>k", { desc = "Go to right window", remap = true })
 
 -- Resize window using <ctrl> arrow keys
 keymap.set("n", "<C-Up>", "<cmd>resize +2<cr>", { desc = "Increase window height" })
@@ -18,10 +20,6 @@ keymap.set("n", "<C-Left>", "<cmd>vertical resize -2<cr>", { desc = "Decrease wi
 keymap.set("n", "<C-Right>", "<cmd>vertical resize +2<cr>", { desc = "Increase window width" })
 
 -- Move Lines (consistent with ideavim)
-keymap.set("n", "<C-j>", "<cmd>m .+1<cr>==", { desc = "Move down" })
-keymap.set("n", "<C-k>", "<cmd>m .-2<cr>==", { desc = "Move up" })
-keymap.set("i", "<C-j>", "<esc><cmd>m .+1<cr>==gi", { desc = "Move down" })
-keymap.set("i", "<C-k>", "<esc><cmd>m .-2<cr>==gi", { desc = "Move up" })
 keymap.set("v", "<C-j>", ":m '>+1<cr>gv=gv", { desc = "Move down" })
 keymap.set("v", "<C-k>", ":m '<-2<cr>gv=gv", { desc = "Move up" })
 -- Keep Alt versions for alternative
@@ -37,22 +35,22 @@ keymap.set("n", "<leader>`", "<cmd>e #<cr>", { desc = "Switch to Other Buffer" }
 
 -- Better buffer management - save and close current buffer, return to previous
 keymap.set("n", "<leader>bd", function()
-    local buf_count = #vim.fn.getbufinfo({buflisted = 1})
+    local buf_count = #vim.fn.getbufinfo({ buflisted = 1 })
     if buf_count > 1 then
-        vim.cmd("bp|bd #")  -- Go to previous buffer, then delete the one we were on
+        vim.cmd("bp|bd #") -- Go to previous buffer, then delete the one we were on
     else
-        vim.cmd("enew")     -- If only one buffer, create a new empty buffer
+        vim.cmd("enew") -- If only one buffer, create a new empty buffer
     end
 end, { desc = "Delete buffer and return to previous" })
 
 -- Save and close current buffer, return to previous
 keymap.set("n", "<leader>bq", function()
-    vim.cmd("w")  -- Save first
-    local buf_count = #vim.fn.getbufinfo({buflisted = 1})
+    vim.cmd("w") -- Save first
+    local buf_count = #vim.fn.getbufinfo({ buflisted = 1 })
     if buf_count > 1 then
-        vim.cmd("bp|bd #")  -- Go to previous buffer, then delete the one we saved
+        vim.cmd("bp|bd #") -- Go to previous buffer, then delete the one we saved
     else
-        vim.cmd("enew")     -- If only one buffer, create a new empty buffer
+        vim.cmd("enew") -- If only one buffer, create a new empty buffer
     end
 end, { desc = "Save, close buffer, and return to previous" })
 
@@ -85,18 +83,24 @@ vim.api.nvim_create_user_command("WQ", function()
 end, { desc = "Write and close buffer (like :wq but better)" })
 
 -- Make :wq behave better by creating an abbreviation
-vim.cmd('cnoreabbrev wq WQ')
+vim.cmd("cnoreabbrev wq WQ")
 
 -- Make :q behave like :wq (save and close buffer) safely
 -- Only when the exact command is ':q', not 'qall', 'qa', or 'q!'
-vim.cmd([[cnoreabbrev <expr> q (getcmdtype() == ':' && getcmdline() ==# 'q' && &buftype == '' && &modifiable && !&readonly) ? 'WQ' : 'q']])
+vim.cmd(
+    [[cnoreabbrev <expr> q (getcmdtype() == ':' && getcmdline() ==# 'q' && &buftype == '' && &modifiable && !&readonly) ? 'WQ' : 'q']]
+)
 
 -- Clear search with <esc>
 keymap.set({ "i", "n" }, "<esc>", "<cmd>noh<cr><esc>", { desc = "Escape and clear hlsearch" })
 
 -- Clear search, diff update and redraw
-keymap.set("n", "<leader>ur", "<Cmd>nohlsearch<Bar>diffupdate<Bar>normal! <C-L><CR>",
-    { desc = "Redraw / clear hlsearch / diff update" })
+keymap.set(
+    "n",
+    "<leader>ur",
+    "<Cmd>nohlsearch<Bar>diffupdate<Bar>normal! <C-L><CR>",
+    { desc = "Redraw / clear hlsearch / diff update" }
+)
 
 -- https://github.com/mhinz/vim-galore#saner-behavior-of-n-and-n
 keymap.set("n", "n", "'Nn'[v:searchforward].'zv'", { expr = true, desc = "Next search result" })
@@ -197,8 +201,12 @@ keymap.set("n", "<C-A-Right>", "<cmd>tabnext<cr>", { desc = "Next tab" })
 
 -- Additional keymaps to match ideavim configuration
 -- File operations (matching ideavim <Space>f* mappings)
-keymap.set("n", "<leader>ff", function() require("telescope.builtin").find_files() end, { desc = "Find files" })
-keymap.set("n", "<leader>fs", function() require("telescope.builtin").live_grep() end, { desc = "Find in files" })
+keymap.set("n", "<leader>ff", function()
+    require("telescope.builtin").find_files()
+end, { desc = "Find files" })
+keymap.set("n", "<leader>fs", function()
+    require("telescope.builtin").live_grep()
+end, { desc = "Find in files" })
 keymap.set("n", "<leader>fc", function()
     local builtin = require("telescope.builtin")
 
@@ -229,7 +237,9 @@ keymap.set("n", "<leader>fc", function()
         prompt_title = tried_lsp and "Classes (fallback grep)" or "Classes (grep)",
     })
 end, { desc = "Find classes in project" })
-keymap.set("n", "<leader>fr", function() require("telescope.builtin").oldfiles() end, { desc = "Recent files" })
+keymap.set("n", "<leader>fr", function()
+    require("telescope.builtin").oldfiles()
+end, { desc = "Recent files" })
 
 -- Code navigation (matching ideavim)
 keymap.set("n", "<leader>ss", function()
@@ -238,22 +248,32 @@ end, { desc = "Document methods/fields" })
 keymap.set("n", "<leader>gi", vim.lsp.buf.implementation, { desc = "Go to implementation" })
 keymap.set("n", "<leader>gs", vim.lsp.buf.type_definition, { desc = "Go to type definition" })
 keymap.set("n", "<leader>gd", vim.lsp.buf.definition, { desc = "Go to definition" })
-keymap.set("n", "<leader>su", function() require("telescope.builtin").lsp_references() end, { desc = "Show usages" })
+keymap.set("n", "<leader>su", function()
+    require("telescope.builtin").lsp_references()
+end, { desc = "Show usages" })
 
 -- Code editing (matching ideavim) - <leader>/ is now handled by Comment plugin
-keymap.set("n", "<leader>co", function() require("utils.code_action").organize() end, { desc = "Organize imports" })
+keymap.set("n", "<leader>co", function()
+    require("utils.code_action").organize()
+end, { desc = "Organize imports" })
 keymap.set("n", "<leader>ci", vim.lsp.buf.code_action, { desc = "Code actions" })
 
 -- Refactoring (matching ideavim)
-keymap.set("n", "<leader>re", function() require("utils.rename").smart() end, { desc = "Rename element" })
+keymap.set("n", "<leader>re", function()
+    require("utils.rename").smart()
+end, { desc = "Rename element" })
 
 -- File tree (matching ideavim <Space>e* mappings)
 keymap.set("n", "<leader>ee", "<cmd>Neotree toggle<cr>", { desc = "Toggle file explorer" })
 keymap.set("n", "<leader>ef", "<cmd>Neotree reveal<cr>", { desc = "Find file in explorer" })
 
 -- Terminal (matching ideavim Ctrl+Enter)
-keymap.set("n", "<C-CR>", function() require("toggleterm").toggle() end, { desc = "Toggle terminal" })
-keymap.set("n", "<C-Enter>", function() require("toggleterm").toggle() end, { desc = "Toggle terminal" })
+keymap.set("n", "<C-CR>", function()
+    require("toggleterm").toggle()
+end, { desc = "Toggle terminal" })
+keymap.set("n", "<C-Enter>", function()
+    require("toggleterm").toggle()
+end, { desc = "Toggle terminal" })
 
 -- Java-specific debug commands
 keymap.set("n", "<leader>jd", "<cmd>JavaLspDebug<cr>", { desc = "Java LSP Debug" })
@@ -284,19 +304,41 @@ keymap.set("n", "<leader>test", function()
 end, { desc = "Test keymap" })
 
 -- Debug keymaps (IntelliJ-style with leader prefix)
-keymap.set("n", "<leader>tb", function() require("dap").toggle_breakpoint() end, { desc = "Toggle Line Breakpoint" })
-keymap.set("v", "<leader>tb", function() require("dap").toggle_breakpoint() end, { desc = "Toggle Line Breakpoint" })
-keymap.set("n", "<leader>ds", function() require("dap").continue() end, { desc = "Debug/Start" })
-keymap.set("n", "<leader>dn", function() require("dap").step_over() end, { desc = "Step Over" })
-keymap.set("n", "<leader>di", function() require("dap").step_into() end, { desc = "Step Into" })
-keymap.set("n", "<leader>dr", function() require("dap").continue() end, { desc = "Resume" })
-keymap.set("n", "<leader>de", function() require("dapui").eval() end, { desc = "Evaluate Expression" })
-keymap.set("n", "<leader>dt", function() require("dap").run_to_cursor() end, { desc = "Run to Cursor" })
+keymap.set("n", "<leader>tb", function()
+    require("dap").toggle_breakpoint()
+end, { desc = "Toggle Line Breakpoint" })
+keymap.set("v", "<leader>tb", function()
+    require("dap").toggle_breakpoint()
+end, { desc = "Toggle Line Breakpoint" })
+keymap.set("n", "<leader>ds", function()
+    require("dap").continue()
+end, { desc = "Debug/Start" })
+keymap.set("n", "<leader>dn", function()
+    require("dap").step_over()
+end, { desc = "Step Over" })
+keymap.set("n", "<leader>di", function()
+    require("dap").step_into()
+end, { desc = "Step Into" })
+keymap.set("n", "<leader>dr", function()
+    require("dap").continue()
+end, { desc = "Resume" })
+keymap.set("n", "<leader>de", function()
+    require("dapui").eval()
+end, { desc = "Evaluate Expression" })
+keymap.set("n", "<leader>dt", function()
+    require("dap").run_to_cursor()
+end, { desc = "Run to Cursor" })
 
 -- Additional debug shortcuts for completeness
-keymap.set("n", "<leader>do", function() require("dap").step_out() end, { desc = "Step Out" })
-keymap.set("n", "<leader>dq", function() require("dap").terminate() end, { desc = "Stop Debug" })
-keymap.set("n", "<leader>du", function() require("dapui").toggle() end, { desc = "Toggle Debug UI" })
+keymap.set("n", "<leader>do", function()
+    require("dap").step_out()
+end, { desc = "Step Out" })
+keymap.set("n", "<leader>dq", function()
+    require("dap").terminate()
+end, { desc = "Stop Debug" })
+keymap.set("n", "<leader>du", function()
+    require("dapui").toggle()
+end, { desc = "Toggle Debug UI" })
 
 keymap.set("n", "<leader>xr", function()
     local filetype = vim.bo.filetype
@@ -312,7 +354,6 @@ keymap.set("n", "<leader>xr", function()
             local filename = vim.fn.expand("%:t:r")
             vim.cmd("split | terminal java " .. filename)
         end
-
     elseif filetype == "kotlin" then
         -- Kotlin projects
         if vim.fn.filereadable("build.gradle.kts") == 1 or vim.fn.filereadable("build.gradle") == 1 then
@@ -321,9 +362,16 @@ keymap.set("n", "<leader>xr", function()
             vim.cmd("split | terminal mvn compile exec:java")
         else
             local filename = vim.fn.expand("%:t:r")
-            vim.cmd("split | terminal kotlinc " .. vim.fn.expand("%") .. " -include-runtime -d " .. filename .. ".jar && java -jar " .. filename .. ".jar")
+            vim.cmd(
+                "split | terminal kotlinc "
+                    .. vim.fn.expand("%")
+                    .. " -include-runtime -d "
+                    .. filename
+                    .. ".jar && java -jar "
+                    .. filename
+                    .. ".jar"
+            )
         end
-
     elseif filetype == "rust" then
         -- Rust projects
         if vim.fn.filereadable("Cargo.toml") == 1 then
@@ -332,7 +380,6 @@ keymap.set("n", "<leader>xr", function()
             local filename = vim.fn.expand("%:t:r")
             vim.cmd("split | terminal rustc " .. vim.fn.expand("%") .. " && ./" .. filename)
         end
-
     elseif filetype == "go" then
         -- Go projects
         if vim.fn.filereadable("go.mod") == 1 then
@@ -340,7 +387,6 @@ keymap.set("n", "<leader>xr", function()
         else
             vim.cmd("split | terminal go run " .. vim.fn.expand("%"))
         end
-
     elseif filetype == "python" then
         -- Python projects
         if vim.fn.filereadable("pyproject.toml") == 1 then
@@ -352,7 +398,6 @@ keymap.set("n", "<leader>xr", function()
         else
             vim.cmd("split | terminal python " .. vim.fn.expand("%"))
         end
-
     elseif filetype == "javascript" then
         -- JavaScript/Node.js projects
         if vim.fn.filereadable("package.json") == 1 then
@@ -367,7 +412,6 @@ keymap.set("n", "<leader>xr", function()
         else
             vim.cmd("split | terminal node " .. vim.fn.expand("%"))
         end
-
     elseif filetype == "typescript" then
         -- TypeScript projects
         if vim.fn.filereadable("package.json") == 1 then
@@ -382,7 +426,6 @@ keymap.set("n", "<leader>xr", function()
         else
             vim.cmd("split | terminal npx tsx " .. vim.fn.expand("%"))
         end
-
     elseif filetype == "typescriptreact" or filetype == "javascriptreact" then
         -- React projects
         if vim.fn.filereadable("package.json") == 1 then
@@ -397,7 +440,6 @@ keymap.set("n", "<leader>xr", function()
         else
             vim.notify("No package.json found for React project", vim.log.levels.WARN)
         end
-
     elseif filetype == "c" then
         -- C projects
         if vim.fn.filereadable("Makefile") == 1 then
@@ -408,7 +450,6 @@ keymap.set("n", "<leader>xr", function()
             local filename = vim.fn.expand("%:t:r")
             vim.cmd("split | terminal gcc -o " .. filename .. " " .. vim.fn.expand("%") .. " && ./" .. filename)
         end
-
     elseif filetype == "cpp" then
         -- C++ projects
         if vim.fn.filereadable("Makefile") == 1 then
@@ -419,7 +460,6 @@ keymap.set("n", "<leader>xr", function()
             local filename = vim.fn.expand("%:t:r")
             vim.cmd("split | terminal g++ -o " .. filename .. " " .. vim.fn.expand("%") .. " && ./" .. filename)
         end
-
     elseif filetype == "cs" then
         -- C# projects
         if vim.fn.filereadable("*.csproj") == 1 or vim.fn.filereadable("*.sln") == 1 then
@@ -428,19 +468,15 @@ keymap.set("n", "<leader>xr", function()
             local filename = vim.fn.expand("%:t:r")
             vim.cmd("split | terminal dotnet run " .. filename .. ".cs")
         end
-
     elseif filetype == "lua" then
         -- Lua projects
         vim.cmd("split | terminal lua " .. vim.fn.expand("%"))
-
     elseif filetype == "sh" or filetype == "bash" then
         -- Shell scripts
         vim.cmd("split | terminal bash " .. vim.fn.expand("%"))
-
     elseif filetype == "dockerfile" then
         -- Docker projects
         vim.cmd("split | terminal docker build -t temp-image . && docker run --rm temp-image")
-
     else
         -- Fallback: try common project runners
         if vim.fn.filereadable("Makefile") == 1 then
