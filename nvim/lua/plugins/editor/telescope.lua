@@ -49,9 +49,34 @@ return {
         {
             "<leader>fc",
             function()
-                require("telescope.builtin").find_files({ cwd = vim.fn.stdpath("config"), hidden = true, no_ignore = true })
+                local builtin = require("telescope.builtin")
+                local function any_client_supports(method)
+                    for _, client in pairs(vim.lsp.get_active_clients()) do
+                        if client.supports_method and client:supports_method(method) then
+                            return true
+                        end
+                    end
+                    return false
+                end
+
+                local tried_lsp = false
+                if any_client_supports("workspace/symbol") then
+                    tried_lsp = true
+                    local ok = pcall(builtin.lsp_dynamic_workspace_symbols, { symbols = { "Class" } })
+                    if not ok then
+                        ok = pcall(builtin.lsp_workspace_symbols, { query = "", symbols = { "Class" } })
+                    end
+                    if ok then
+                        return
+                    end
+                end
+
+                builtin.live_grep({
+                    default_text = "class ",
+                    prompt_title = tried_lsp and "Classes (fallback grep)" or "Classes (grep)",
+                })
             end,
-            desc = "Find Config File",
+            desc = "Find Classes (project)",
         },
         {
             "<leader>ff",
@@ -136,11 +161,7 @@ return {
             end,
             desc = "Grep (cwd)",
         },
-        {
-            "<leader>sh",
-            "<cmd>Telescope help_tags<cr>",
-            desc = "Help Pages",
-        },
+        -- NOTE: <leader>sh is reserved for horizontal split
         {
             "<leader>sH",
             "<cmd>Telescope highlights<cr>",

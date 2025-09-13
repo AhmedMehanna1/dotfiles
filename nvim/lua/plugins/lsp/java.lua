@@ -118,6 +118,7 @@ return {
         vim.keymap.set("n", "<leader>ec", "<cmd>JdtExtractConstant<CR>", opts)
         vim.keymap.set("v", "<leader>em", "<Esc><Cmd>JdtExtractMethod<CR>", opts)
 
+
         -- Test runner mappings
         vim.keymap.set("n", "<leader>tc", "<cmd>lua require'jdtls'.test_class()<CR>", opts)
         vim.keymap.set("n", "<leader>tm", "<cmd>lua require'jdtls'.test_nearest_method()<CR>", opts)

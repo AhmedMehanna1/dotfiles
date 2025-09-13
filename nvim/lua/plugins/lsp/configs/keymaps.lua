@@ -71,7 +71,9 @@ function M.get()
         },
         {
             "<leader>ca",
-            vim.lsp.buf.code_action,
+            function()
+                require("utils.code_action").run()
+            end,
             desc = "Code Action",
             mode = { "n", "v" },
             has = "codeAction",
@@ -105,7 +107,14 @@ function M.get()
             mode = { "n" },
             has = "codeLens",
         },
-        { "<leader>cr", vim.lsp.buf.rename, desc = "Rename", has = "rename" },
+        {
+            "<leader>cr",
+            function()
+                require("utils.rename").smart()
+            end,
+            desc = "Smart Rename",
+            has = "rename",
+        },
         {
             "<leader>cF",
             function()

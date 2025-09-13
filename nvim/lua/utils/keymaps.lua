@@ -19,7 +19,15 @@ function M.get()
         { "K",          vim.lsp.buf.hover,                                                                      desc = "Hover" },
         { "gK",         vim.lsp.buf.signature_help,                                                             desc = "Signature Help",        has = "signatureHelp" },
         { "<c-k>",      vim.lsp.buf.signature_help,                                                             mode = "i",                     desc = "Signature Help", has = "signatureHelp" },
-        { "<leader>ca", vim.lsp.buf.code_action,                                                                desc = "Code Action",           mode = { "n", "v" },     has = "codeAction" },
+        {
+            "<leader>ca",
+            function()
+                require("utils.code_action").run()
+            end,
+            desc = "Code Action",
+            mode = { "n", "v" },
+            has = "codeAction",
+        },
         {
             "<leader>cA",
             function()
@@ -37,7 +45,14 @@ function M.get()
         },
         { "<leader>cc", vim.lsp.codelens.run,     desc = "Run Codelens",               mode = { "n", "v" }, has = "codeLens" },
         { "<leader>cC", vim.lsp.codelens.refresh, desc = "Refresh & Display Codelens", mode = { "n" },      has = "codeLens" },
-        { "<leader>cr", vim.lsp.buf.rename,       desc = "Rename",                     has = "rename" },
+        {
+            "<leader>cr",
+            function()
+                require("utils.rename").smart()
+            end,
+            desc = "Smart Rename",
+            has = "rename",
+        },
     }
 
     return M._keys
