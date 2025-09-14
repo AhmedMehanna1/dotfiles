@@ -51,6 +51,23 @@ return {
             vim.split(vim.fn.glob(home .. "/.local/share/nvim/mason/packages/java-test/extension/server/*.jar"), "\n")
         )
 
+        -- Client capabilities with file operations (needed for some refactors)
+        local capabilities = vim.lsp.protocol.make_client_capabilities()
+        capabilities.workspace = capabilities.workspace or {}
+        capabilities.workspace.workspaceEdit = capabilities.workspace.workspaceEdit or {}
+        capabilities.workspace.workspaceEdit.documentChanges = true
+        capabilities.workspace.workspaceEdit.resourceOperations = { "create", "rename", "delete" }
+        capabilities.workspace.didChangeWatchedFiles = { dynamicRegistration = true }
+        capabilities.workspace.fileOperations = {
+            dynamicRegistration = false,
+            didCreate = true,
+            didRename = true,
+            didDelete = true,
+            willCreate = true,
+            willRename = true,
+            willDelete = true,
+        }
+
         local config = {
             cmd = {
                 jdk_home .. "/bin/java",
@@ -73,6 +90,7 @@ return {
                 "-data",
                 workspace_dir,
             },
+            capabilities = capabilities,
             root_dir = require("jdtls.setup").find_root({
                 "mvnw",
                 "gradlew",
@@ -101,6 +119,38 @@ return {
                     references = { includeDecompiledSources = true },
                     format = { enabled = false }, -- use google-java-format
                     saveActions = { organizeImports = true },
+                    completion = {
+                        favoriteStaticMembers = {
+                            "org.hamcrest.MatcherAssert.assertThat",
+                            "org.hamcrest.Matchers.*",
+                            "org.hamcrest.CoreMatchers.*",
+                            "org.junit.jupiter.api.Assertions.*",
+                            "java.util.Objects.requireNonNull",
+                            "java.util.Objects.requireNonNullElse",
+                            "org.mockito.Mockito.*"
+                        },
+                        importOrder = {
+                            "java",
+                            "javax",
+                            "com",
+                            "org"
+                        },
+                    },
+                    sources = {
+                        organizeImports = {
+                            starThreshold = 9999,
+                            staticStarThreshold = 9999,
+                        },
+                    },
+                    codeGeneration = {
+                        toString = {
+                            template = "${object.className}{${member.name()}=${member.value}, ${otherMembers}}"
+                        },
+                        hashCodeEquals = {
+                            useJava7Objects = true,
+                        },
+                        useBlocks = true,
+                    },
                 },
             },
             init_options = {
@@ -117,6 +167,60 @@ return {
         vim.keymap.set("n", "<leader>ev", "<cmd>JdtExtractVariable<CR>", opts)
         vim.keymap.set("n", "<leader>ec", "<cmd>JdtExtractConstant<CR>", opts)
         vim.keymap.set("v", "<leader>em", "<Esc><Cmd>JdtExtractMethod<CR>", opts)
+
+        -- Java refactoring commands
+        vim.keymap.set("n", "<leader>jm", function()
+            require("utils.java_refactor").move_class_to_package()
+        end, { desc = "Move Java class to package" })
+
+        vim.keymap.set("n", "<leader>jr", function()
+            require("utils.java_refactor").rename_class()
+        end, { desc = "Rename Java class" })
+
+        -- Try using JDTLS commands if available
+        vim.keymap.set("n", "<leader>jmp", function()
+            -- First check if we have JDTLS available
+            local clients = vim.lsp.get_active_clients({ name = "jdtls" })
+            if #clients == 0 then
+                vim.notify("JDTLS not active", vim.log.levels.WARN)
+                return
+            end
+
+            -- Try different approaches for moving files
+            local approaches = {
+                -- Approach 1: Standard LSP code action for refactor.move
+                function()
+                    vim.lsp.buf.code_action({
+                        context = { only = { "refactor.move" }, diagnostics = {} },
+                    })
+                end,
+                -- Approach 2: Direct JDTLS command execution
+                function()
+                    local jdtls = require("jdtls")
+                    local uri = vim.uri_from_bufnr(0)
+                    jdtls.execute_command({
+                        command = "java.action.moveFile",
+                        arguments = { uri }
+                    })
+                end,
+                -- Approach 3: Custom move class utility
+                function()
+                    require("utils.java_refactor").move_class_to_package()
+                end,
+            }
+
+            -- Try each approach in order
+            for i, approach in ipairs(approaches) do
+                local success = pcall(approach)
+                if success then
+                    vim.notify("Used approach " .. i .. " for moving file", vim.log.levels.INFO)
+                    break
+                elseif i == #approaches then
+                    vim.notify("All move approaches failed, falling back to custom utility", vim.log.levels.WARN)
+                    require("utils.java_refactor").move_class_to_package()
+                end
+            end
+        end, { desc = "Move Java class (Multiple approaches)" })
 
 
         -- Test runner mappings

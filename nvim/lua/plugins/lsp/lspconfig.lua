@@ -295,6 +295,22 @@ return {
             opts.capabilities or {}
         )
 
+        -- Ensure file operation capabilities are advertised (needed for refactors like Move File)
+        capabilities.workspace = capabilities.workspace or {}
+        capabilities.workspace.workspaceEdit = capabilities.workspace.workspaceEdit or {}
+        capabilities.workspace.workspaceEdit.documentChanges = true
+        capabilities.workspace.workspaceEdit.resourceOperations = { "create", "rename", "delete" }
+        capabilities.workspace.didChangeWatchedFiles = { dynamicRegistration = true }
+        capabilities.workspace.fileOperations = {
+            dynamicRegistration = false,
+            didCreate = true,
+            didRename = true,
+            didDelete = true,
+            willCreate = true,
+            willRename = true,
+            willDelete = true,
+        }
+
         local function setup(server)
             local server_opts = vim.tbl_deep_extend("force", {
                 capabilities = vim.deepcopy(capabilities),
@@ -384,5 +400,103 @@ return {
                 end, 1000) -- Wait 1 second for nvim-java to do its thing
             end,
         })
+
+        -- Register handlers for server-initiated file move/rename commands
+        local function perform_move(old_uri, new_uri)
+            -- Try to use fileops utility if available
+            local fileops_ok, fileops = pcall(require, "utils.fileops")
+
+            -- Convert URIs to paths
+            local old_path = type(old_uri) == "string" and (old_uri:match("^%a[%w+.-]*://") and vim.uri_to_fname(old_uri) or old_uri) or ""
+            local new_path = type(new_uri) == "string" and (new_uri:match("^%a[%w+.-]*://") and vim.uri_to_fname(new_uri) or new_uri) or ""
+
+            if old_path == "" or new_path == "" then
+                error("invalid paths: old='" .. tostring(old_path) .. "', new='" .. tostring(new_path) .. "'")
+            end
+
+            if fileops_ok then
+                -- Use advanced fileops with LSP notifications
+                local ok, err = fileops.rename_file(old_path, new_path)
+                if not ok then
+                    error("fileops.rename_file failed: " .. tostring(err))
+                end
+            else
+                -- Fallback to simple file system rename
+                local dir = vim.fn.fnamemodify(new_path, ":h")
+                if dir ~= "" then
+                    vim.fn.mkdir(dir, "p")
+                end
+
+                local ok, err = vim.loop.fs_rename(old_path, new_path)
+                if not ok then
+                    ok, err = pcall(os.rename, old_path, new_path)
+                    if not ok then
+                        error("Failed to rename file: " .. tostring(err))
+                    end
+                end
+
+                -- Update any open buffer visiting the old path
+                for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+                    if vim.api.nvim_buf_is_loaded(buf) then
+                        local name = vim.api.nvim_buf_get_name(buf)
+                        if name == old_path then
+                            vim.api.nvim_buf_set_name(buf, new_path)
+                            if not vim.bo[buf].modified then
+                                pcall(vim.api.nvim_buf_call, buf, function()
+                                    vim.cmd("silent noautocmd edit")
+                                end)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        -- Generic handler accepting different arg shapes
+        local function handle_move_command(command)
+            local args = command.arguments or {}
+            local old_uri, new_uri
+
+            -- Handle different argument formats
+            if type(args[1]) == "table" and args[1].oldUri and args[1].newUri then
+                old_uri = args[1].oldUri
+                new_uri = args[1].newUri
+            elseif type(args[1]) == "table" and args[1].textDocument then
+                -- Handle LSP textDocument format
+                old_uri = args[1].textDocument.uri
+                new_uri = args[2] -- new URI should be second argument
+            else
+                old_uri = args[1]
+                new_uri = args[2]
+            end
+
+            if not old_uri or not new_uri then
+                vim.notify("moveFile: missing arguments. Args received: " .. vim.inspect(args), vim.log.levels.ERROR)
+                return { success = false, error = "Missing arguments" }
+            end
+
+            local success, err = pcall(perform_move, old_uri, new_uri)
+            if success then
+                vim.notify("File moved successfully", vim.log.levels.INFO)
+                return { success = true }
+            else
+                vim.notify("moveFile failed: " .. tostring(err), vim.log.levels.ERROR)
+                return { success = false, error = tostring(err) }
+            end
+        end
+
+        -- Commands seen from various servers/tools
+        vim.lsp.commands = vim.lsp.commands or {}
+        vim.lsp.commands["moveFile"] = function(command)
+            vim.notify("moveFile command called with: " .. vim.inspect(command), vim.log.levels.INFO)
+            return handle_move_command(command)
+        end
+        vim.lsp.commands["renameFile"] = handle_move_command
+        vim.lsp.commands["typescript.renameFile"] = handle_move_command
+
+        -- Add a debug command to test moveFile
+        vim.api.nvim_create_user_command("TestMoveFile", function()
+            vim.notify("Available LSP commands: " .. vim.inspect(vim.tbl_keys(vim.lsp.commands or {})), vim.log.levels.INFO)
+        end, { desc = "Debug LSP commands" })
     end,
 }

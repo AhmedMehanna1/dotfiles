@@ -3,14 +3,39 @@ return {
     {
         "jose-elias-alvarez/typescript.nvim",
         ft = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
-        opts = {
-            server = {
-                settings = {
-                    typescript = {
-                        inlayHints = {
-                            includeInlayParameterNameHints = "all",
-                            includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-                            includeInlayFunctionParameterTypeHints = true,
+        opts = function()
+            -- Build capabilities with file operation support so refactors like moveFile work
+            local has_cmp, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
+            local capabilities = vim.tbl_deep_extend(
+                "force",
+                {},
+                vim.lsp.protocol.make_client_capabilities(),
+                has_cmp and cmp_nvim_lsp.default_capabilities() or {}
+            )
+            capabilities.workspace = capabilities.workspace or {}
+            capabilities.workspace.workspaceEdit = capabilities.workspace.workspaceEdit or {}
+            capabilities.workspace.workspaceEdit.documentChanges = true
+            capabilities.workspace.workspaceEdit.resourceOperations = { "create", "rename", "delete" }
+            capabilities.workspace.didChangeWatchedFiles = { dynamicRegistration = true }
+            capabilities.workspace.fileOperations = {
+                dynamicRegistration = false,
+                didCreate = true,
+                didRename = true,
+                didDelete = true,
+                willCreate = true,
+                willRename = true,
+                willDelete = true,
+            }
+
+            return {
+                server = {
+                    capabilities = capabilities,
+                    settings = {
+                        typescript = {
+                            inlayHints = {
+                                includeInlayParameterNameHints = "all",
+                                includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+                                includeInlayFunctionParameterTypeHints = true,
                             includeInlayVariableTypeHints = false,
                             includeInlayPropertyDeclarationTypeHints = true,
                             includeInlayFunctionLikeReturnTypeHints = true,
@@ -29,8 +54,9 @@ return {
                         },
                     },
                 },
-            },
-        },
+            }
+            }
+        end,
     },
     -- React/JSX support
     {
