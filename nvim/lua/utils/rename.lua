@@ -121,15 +121,15 @@ function M.rename_class_and_file()
   end
 
   if not did_special then
-    local ok, err = vim.loop.fs_rename(old_path, new_path)
+    local ok, err = require("utils.fileops").rename_file(old_path, new_path)
     if not ok then
       vim.notify("File rename failed: " .. tostring(err), vim.log.levels.ERROR)
       return
     end
+  else
+    -- If typescript.nvim handled it, make sure current window visits new path
+    vim.cmd("edit " .. vim.fn.fnameescape(new_path))
   end
-
-  -- Reopen the new path in current window
-  vim.cmd("edit " .. vim.fn.fnameescape(new_path))
 
   -- Java helpers: organize imports after rename
   if vim.bo.filetype == "java" then

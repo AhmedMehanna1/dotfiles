@@ -256,7 +256,21 @@ end, { desc = "Show usages" })
 keymap.set("n", "<leader>co", function()
     require("utils.code_action").organize()
 end, { desc = "Organize imports" })
-keymap.set("n", "<leader>ci", vim.lsp.buf.code_action, { desc = "Code actions" })
+-- Code actions: provide both <leader>ca (common) and <leader>ci (existing)
+keymap.set({ "n", "v" }, "<leader>ca", function()
+    require("utils.code_action").run()
+end, { desc = "Code actions" })
+keymap.set({ "n", "v" }, "<leader>ci", function()
+    require("utils.code_action").run()
+end, { desc = "Code actions" })
+-- Alt+Enter (IntelliJ-style) for code actions
+keymap.set({ "n", "v" }, "<A-CR>", function()
+    require("utils.code_action").run()
+end, { desc = "Code actions (Alt+Enter)" })
+-- Some terminals send <M-CR> instead of <A-CR>
+keymap.set({ "n", "v" }, "<M-CR>", function()
+    require("utils.code_action").run()
+end, { desc = "Code actions (Alt+Enter)" })
 
 -- Refactoring (matching ideavim)
 keymap.set("n", "<leader>re", function()
@@ -305,13 +319,36 @@ end, { desc = "Test keymap" })
 
 -- Debug keymaps (IntelliJ-style with leader prefix)
 keymap.set("n", "<leader>tb", function()
-    require("dap").toggle_breakpoint()
+    local dap_ok, dap = pcall(require, "dap")
+    if not dap_ok then
+        vim.notify("DAP not available", vim.log.levels.ERROR)
+        return
+    end
+    dap.toggle_breakpoint()
 end, { desc = "Toggle Line Breakpoint" })
 keymap.set("v", "<leader>tb", function()
-    require("dap").toggle_breakpoint()
+    local dap_ok, dap = pcall(require, "dap")
+    if not dap_ok then
+        vim.notify("DAP not available", vim.log.levels.ERROR)
+        return
+    end
+    dap.toggle_breakpoint()
 end, { desc = "Toggle Line Breakpoint" })
 keymap.set("n", "<leader>ds", function()
-    require("dap").continue()
+    local dap_ok, dap = pcall(require, "dap")
+    if not dap_ok then
+        vim.notify("DAP not available. Please install nvim-dap.", vim.log.levels.ERROR)
+        return
+    end
+
+    -- Check if there are any debug configurations
+    local filetype = vim.bo.filetype
+    if not dap.configurations[filetype] or #dap.configurations[filetype] == 0 then
+        vim.notify("No debug configuration found for filetype: " .. filetype, vim.log.levels.WARN)
+        return
+    end
+
+    dap.continue()
 end, { desc = "Debug/Start" })
 keymap.set("n", "<leader>dn", function()
     require("dap").step_over()
@@ -339,6 +376,45 @@ end, { desc = "Stop Debug" })
 keymap.set("n", "<leader>du", function()
     require("dapui").toggle()
 end, { desc = "Toggle Debug UI" })
+
+-- Debug diagnostics command
+keymap.set("n", "<leader>dtest", function()
+    local dap_ok, dap = pcall(require, "dap")
+    if not dap_ok then
+        vim.notify("❌ DAP not loaded", vim.log.levels.ERROR)
+        return
+    end
+
+    local filetype = vim.bo.filetype
+    vim.notify("🔍 Filetype: " .. filetype, vim.log.levels.INFO)
+
+    if dap.configurations[filetype] then
+        vim.notify("✅ Debug config found for " .. filetype .. " (" .. #dap.configurations[filetype] .. " configs)", vim.log.levels.INFO)
+        for i, config in ipairs(dap.configurations[filetype]) do
+            vim.notify("  " .. i .. ". " .. (config.name or "Unnamed"), vim.log.levels.INFO)
+        end
+    else
+        vim.notify("❌ No debug configuration for " .. filetype, vim.log.levels.WARN)
+    end
+
+    -- Check adapters
+    if dap.adapters[filetype] or (filetype == "java" and dap.adapters.java) then
+        vim.notify("✅ Adapter available", vim.log.levels.INFO)
+    else
+        vim.notify("❌ No adapter for " .. filetype, vim.log.levels.WARN)
+    end
+
+    -- Check Mason packages
+    local mason_registry = require("mason-registry")
+    local debug_packages = { "debugpy", "delve", "js-debug-adapter", "netcoredbg", "java-debug-adapter" }
+    for _, pkg in ipairs(debug_packages) do
+        if mason_registry.is_installed(pkg) then
+            vim.notify("✅ " .. pkg .. " installed", vim.log.levels.INFO)
+        else
+            vim.notify("❌ " .. pkg .. " not installed", vim.log.levels.WARN)
+        end
+    end
+end, { desc = "Test Debug Setup" })
 
 keymap.set("n", "<leader>xr", function()
     local filetype = vim.bo.filetype
