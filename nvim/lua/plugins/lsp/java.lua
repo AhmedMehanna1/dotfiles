@@ -14,12 +14,94 @@ return {
         local config_linux = jdtls_path .. "/config_linux"
         local lombok_path = home .. "/.m2/repository/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar"
 
-        -- Detect JAVA_HOME
+        -- Detect project's Java version from pom.xml, build.gradle, or .java-version
+        local function detect_project_java_version()
+            local cwd = vim.fn.getcwd()
+
+            -- Check .java-version file first
+            local java_version_file = cwd .. "/.java-version"
+            local f = io.open(java_version_file, "r")
+            if f then
+                local version = f:read("*all"):gsub("%s+$", "")
+                f:close()
+                return tonumber(version)
+            end
+
+            -- Check pom.xml
+            local pom_file = cwd .. "/pom.xml"
+            f = io.open(pom_file, "r")
+            if f then
+                local content = f:read("*all")
+                f:close()
+
+                -- Look for maven.compiler.source or maven.compiler.target
+                local version = content:match("<maven%.compiler%.source>(%d+)")
+                if version then return tonumber(version) end
+
+                version = content:match("<maven%.compiler%.target>(%d+)")
+                if version then return tonumber(version) end
+
+                -- Look for java.version property
+                version = content:match("<java%.version>(%d+)")
+                if version then return tonumber(version) end
+            end
+
+            -- Check build.gradle or build.gradle.kts
+            for _, gradle_file in ipairs({ cwd .. "/build.gradle", cwd .. "/build.gradle.kts" }) do
+                f = io.open(gradle_file, "r")
+                if f then
+                    local content = f:read("*all")
+                    f:close()
+
+                    -- Look for sourceCompatibility or targetCompatibility
+                    local version = content:match("sourceCompatibility%s*=%s*JavaVersion%.VERSION_(%d+)")
+                    if version then return tonumber(version) end
+
+                    version = content:match("targetCompatibility%s*=%s*JavaVersion%.VERSION_(%d+)")
+                    if version then return tonumber(version) end
+
+                    version = content:match("sourceCompatibility%s*=%s*['\"](%d+)['\"]")
+                    if version then return tonumber(version) end
+
+                    version = content:match("targetCompatibility%s*=%s*['\"](%d+)['\"]")
+                    if version then return tonumber(version) end
+                end
+            end
+
+            -- Default to system Java version if no project-specific version found
+            return nil
+        end
+
+        -- Detect JAVA_HOME based on project version or system default
         local function detect_jdk()
+            local project_version = detect_project_java_version()
+
+            -- If project specifies a version, try to use that JDK
+            if project_version then
+                local jdk_path = "/usr/lib/jvm/java-" .. project_version .. "-openjdk"
+                local f = io.open(jdk_path .. "/bin/java", "r")
+                if f then
+                    f:close()
+                    return jdk_path
+                end
+
+                -- Alternative path structure
+                jdk_path = "/opt/jdk-" .. project_version
+                f = io.open(jdk_path .. "/bin/java", "r")
+                if f then
+                    f:close()
+                    return jdk_path
+                end
+
+                vim.notify("Project requires Java " .. project_version .. " but JDK not found at expected paths", vim.log.levels.WARN)
+            end
+
+            -- Fall back to system default
             local java_home = os.getenv("JAVA_HOME")
             if java_home and #java_home > 0 then
                 return java_home
             end
+
             local handle = io.popen("readlink -f $(which java) | sed 's:/bin/java::'")
             if handle then
                 local result = handle:read("*a"):gsub("%s+$", "")
@@ -29,11 +111,19 @@ return {
             return nil
         end
 
+        local project_version = detect_project_java_version()
         local jdk_home = detect_jdk()
+
         if not jdk_home then
             vim.notify("No JDK detected! Please set JAVA_HOME.", vim.log.levels.ERROR)
             return
         end
+
+        -- Show which Java version is being used for this project
+        local version_info = project_version and
+            ("Using Java " .. project_version .. " (project-specific)") or
+            ("Using system Java from " .. jdk_home)
+        vim.notify(version_info, vim.log.levels.INFO)
 
         -- Workspace dir (per project)
         local project_name = vim.fn.fnamemodify(vim.fn.getcwd(), ":p:h:t")
