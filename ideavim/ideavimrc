@@ -48,13 +48,16 @@ nnoremap <Space>/ :action CommentByLineComment<CR>
 vnoremap <Space>/ :action CommentByLineComment<CR>
 nnoremap <Space>cf :action ReformatCode<CR>
 nnoremap <Space>co :action OptimizeImports<CR>
-nnoremap <Space>ci :action ImplementMethods<CR>
+nnoremap <Space>cg :action Generate<CR>
 
 " Bookmarking
 nnoremap <Space>bt :action ToggleBookmark<CR>
 nnoremap <Space>bm :action ToggleBookmarkWithMnemonic<CR>
 nnoremap <Space>be :action EditBookmark<CR>
 nnoremap <Space>bs :action ShowBookmarks<CR>
+
+" History
+nnoremap <Space>hb :action Vcs.ShowHistoryForBlock<CR>
 
 " Window Management
 nnoremap <Space>sv :action SplitVertically<CR>
