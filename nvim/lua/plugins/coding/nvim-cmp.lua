@@ -84,11 +84,24 @@ return {
                     cmp.config.compare.offset,
                     cmp.config.compare.exact,
                     cmp.config.compare.score,
-                    -- de-prioritize snippets
+                    -- de-prioritize snippets and text
                     function(entry1, entry2)
-                        if entry1.source.name == "luasnip" then
+                        local kind1 = entry1:get_kind()
+                        local kind2 = entry2:get_kind()
+
+                        -- Move Text and Snippet kinds to bottom
+                        local deprioritized = { [1] = true, [15] = true } -- Text = 1, Snippet = 15
+
+                        if deprioritized[kind1] and not deprioritized[kind2] then
                             return false
-                        elseif entry2.source.name == "luasnip" then
+                        elseif deprioritized[kind2] and not deprioritized[kind1] then
+                            return true
+                        end
+
+                        -- Also de-prioritize by source name
+                        if entry1.source.name == "luasnip" and entry2.source.name ~= "luasnip" then
+                            return false
+                        elseif entry2.source.name == "luasnip" and entry1.source.name ~= "luasnip" then
                             return true
                         end
                     end,

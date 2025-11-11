@@ -25,7 +25,7 @@ return {
             },
         },
         inlay_hints = {
-            enabled = true,
+            enabled = false,
         },
         capabilities = {},
         format = {
@@ -137,9 +137,10 @@ return {
                         "meson.build",
                         "meson_options.txt",
                         "build.ninja"
-                    )(fname) or require("lspconfig.util").root_pattern("compile_commands.json", "compile_flags.txt")(
-                        fname
-                    ) or require("lspconfig.util").find_git_ancestor(fname)
+                    )(fname) or require("lspconfig.util").root_pattern(
+                        "compile_commands.json",
+                        "compile_flags.txt"
+                    )(fname) or require("lspconfig.util").find_git_ancestor(fname)
                 end,
                 capabilities = {
                     offsetEncoding = { "utf-16" },
@@ -407,8 +408,12 @@ return {
             local fileops_ok, fileops = pcall(require, "utils.fileops")
 
             -- Convert URIs to paths
-            local old_path = type(old_uri) == "string" and (old_uri:match("^%a[%w+.-]*://") and vim.uri_to_fname(old_uri) or old_uri) or ""
-            local new_path = type(new_uri) == "string" and (new_uri:match("^%a[%w+.-]*://") and vim.uri_to_fname(new_uri) or new_uri) or ""
+            local old_path = type(old_uri) == "string"
+                    and (old_uri:match("^%a[%w+.-]*://") and vim.uri_to_fname(old_uri) or old_uri)
+                or ""
+            local new_path = type(new_uri) == "string"
+                    and (new_uri:match("^%a[%w+.-]*://") and vim.uri_to_fname(new_uri) or new_uri)
+                or ""
 
             if old_path == "" or new_path == "" then
                 error("invalid paths: old='" .. tostring(old_path) .. "', new='" .. tostring(new_path) .. "'")
@@ -496,7 +501,10 @@ return {
 
         -- Add a debug command to test moveFile
         vim.api.nvim_create_user_command("TestMoveFile", function()
-            vim.notify("Available LSP commands: " .. vim.inspect(vim.tbl_keys(vim.lsp.commands or {})), vim.log.levels.INFO)
+            vim.notify(
+                "Available LSP commands: " .. vim.inspect(vim.tbl_keys(vim.lsp.commands or {})),
+                vim.log.levels.INFO
+            )
         end, { desc = "Debug LSP commands" })
     end,
 }

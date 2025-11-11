@@ -16,6 +16,7 @@ opt.number = true -- Show line numbers
 opt.relativenumber = true -- Show relative line numbers
 
 -- General options
+opt.swapfile = false
 opt.autowrite = true -- Enable auto write
 opt.clipboard = "unnamedplus" -- Sync with system clipboard
 opt.completeopt = "menu,menuone,noselect"
@@ -57,13 +58,13 @@ opt.virtualedit = "block" -- Allow cursor to move where there is no text in visu
 opt.wildmode = "longest:full,full" -- Command-line completion mode
 opt.winminwidth = 5 -- Minimum window width
 opt.wrap = false -- Disable line wrap
-opt.expandtab = true      -- Use spaces instead of tabs
-opt.shiftwidth = 2        -- Number of spaces for each indentation
-opt.tabstop = 2           -- Number of spaces tabs count for
-opt.softtabstop = 2       -- Number of spaces for tab in insert mode
-opt.smartindent = true    -- Smart auto-indenting
-opt.autoindent = true     -- Copy indent from current line
-opt.breakindent = true    -- Enable break indent
+opt.expandtab = true -- Use spaces instead of tabs
+opt.shiftwidth = 2 -- Number of spaces for each indentation
+opt.tabstop = 2 -- Number of spaces tabs count for
+opt.softtabstop = 2 -- Number of spaces for tab in insert mode
+opt.smartindent = true -- Smart auto-indenting
+opt.autoindent = true -- Copy indent from current line
+opt.breakindent = true -- Enable break indent
 
 -- Fix markdown indentation settings
 vim.g.markdown_recommended_style = 0
