@@ -34,6 +34,7 @@ nnoremap <Space>fs :action FindInPath<CR>
 nnoremap <Space>fc :action GotoClass<CR>
 nnoremap <Space>fS :action GotoSymbol<CR>
 nnoremap <Space>fr :action RecentFiles<CR>
+nnoremap <Space>xo :action CloseAllEditorsButActive<CR>
 
 " Code Navigation
 nnoremap <Space>ss :action FileStructurePopup<CR>

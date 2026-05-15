@@ -1,0 +1,80 @@
+data.location=$NOTES/.task
+hooks.location=$XDG_CONFIG_HOME/task/hooks/
+
+news.version=3.4.2
+nag=
+search.case.sensitive=0
+verbose=blank,footnote,label,new-id,affected,edit,special,project,sync,filter,override,recur
+
+list.all.projects=1
+list.all.tags=1
+
+calendar.details=full
+calendar.holidays=sparse
+# weekstart=monday
+
+uda.priority.default=M
+urgency.tags.coefficient=0
+urgency.project.coefficient=0.5
+
+context.work.read=project:work
+context.work.write=project:work
+context.home.read=project:home
+context.home.write=project:home
+
+context.done_last_week.read=( end>=monday-2w and end<monday-1w )
+context.done_last_week.write=( end>=monday-2w and end<monday-1w )
+context.done_this_week.read=( end>=monday-1w and end<monday )
+context.done_this_week.write=( end>=monday-1w and end<monday )
+context.done_yesterday.read=( end>=yesterday and end<today )
+context.done_yesterday.write=( end>=yesterday and end<today )
+
+context.soon.read=( ( ( scheduled.none: and -later ) or scheduled>=tomorrow+1d ) and ( ( due.none: and -later ) or due>=tomorrow+1d ) and -ACTIVE and status:pending and -WAITING )
+context.soon.write=( ( ( scheduled.none: and -later ) or scheduled>=tomorrow+1d ) and ( ( due.none: and -later ) or due>=tomorrow+1d ) and -ACTIVE and status:pending and -WAITING )
+context.today.read=( ( ( scheduled<tomorrow or due<tomorrow or +next or +ACTIVE ) and status:pending and -WAITING ) or end>=today )
+context.today.write=( ( ( scheduled<tomorrow or due<tomorrow or +next or +ACTIVE ) and status:pending and -WAITING ) or end>=today )
+context.tomorrow.read=( ( scheduled.none: or scheduled>=tomorrow ) and ( due.none: or due>=tomorrow ) and ( scheduled<tomorrow+1d or due<tomorrow+1d ) and -ACTIVE and status:pending and -WAITING )
+context.tomorrow.write=( ( scheduled.none: or scheduled>=tomorrow ) and ( due.none: or due>=tomorrow ) and ( scheduled<tomorrow+1d or due<tomorrow+1d ) and -ACTIVE and status:pending and -WAITING )
+
+color.tagged=
+color.active=color2
+color.next=color6
+color.blocked=color15 on color8
+color.blocking=color11
+color.recurring=color4
+color.scheduled=color12
+
+color.deleted=on color88
+color.completed=on color22
+color.error=black on color124
+color.label=bold white
+
+color.calendar.weekend=color8
+color.calendar.weeknumber=color5
+color.calendar.scheduled=black on color12
+color.calendar.due.today=black on color1
+color.calendar.due=black on color3
+color.calendar.holiday=black on color6
+
+uda.taskwarrior-tui.keyconfig.log=L
+uda.taskwarrior-tui.keyconfig.delete=X
+uda.taskwarrior-tui.keyconfig.next-tab=l
+uda.taskwarrior-tui.keyconfig.previous-tab=h
+uda.taskwarrior-tui.task-report.next.filter=+READY
+uda.taskwarrior-tui.task-report.prompt-on-done=true
+uda.taskwarrior-tui.task-report.prompt-on-delete=true
+uda.taskwarrior-tui.task-report.prompt-on-undo=true
+uda.taskwarrior-tui.selection.reverse=yes
+
+# estimate value explanations
+# https://github.com/Esri/calcite-design-system/blob/main/CONTRIBUTING.md#estimates
+uda.estimate.label=Estimate
+uda.estimate.values=34,21,13,8,5,3,2,1
+uda.estimate.type=string
+
+# https://github.com/benelan/dotfiles/blob/master/.dotfiles/bin/ftw
+report.fuzzy.description=A report optimized for fuzzy finding with fzf
+report.fuzzy.columns=id,project,tags,description.count
+report.fuzzy.labels=ID,Project,Tags,Description
+report.fuzzy.filter=status:pending
+report.fuzzy.sort=start-,due+,project+,urgency-
