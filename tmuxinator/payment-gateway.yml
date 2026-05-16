@@ -1,0 +1,38 @@
+# /home/ahmed-mehanna/.config/tmuxinator/pgw.yml
+
+name: payment-gateway
+root: ~/git/payment-gateway
+
+windows:
+  - api-gateway:
+      root: ~/git/payment-gateway/api-gateway
+      panes:
+        - vim .
+  - fin-ops:
+      root: ~/git/payment-gateway/fin-ops
+      panes:
+        - vim .
+  - authentication:
+      root: ~/git/payment-gateway/authentication
+      panes:
+        - vim .
+  - commons:
+      root: ~/git/payment-gateway/commons
+      panes:
+        - vim .
+  - orchestration:
+      root: ~/git/payment-gateway/payment-orchestration
+      panes:
+        - vim .
+  - processor:
+      root: ~/git/payment-gateway/payment-processor
+      panes:
+        - vim .
+  - portal-mgmt:
+      root: ~/git/payment-gateway/portal-mgmt
+      panes:
+        - vim .
+  - reporting:
+      root: ~/git/payment-gateway/reporting
+      panes:
+        - vim .
