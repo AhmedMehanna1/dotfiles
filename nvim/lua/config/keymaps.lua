@@ -1,43 +1,12 @@
-local discipline = require("craftzdog.discipline")
-
-discipline.cowboy()
+-- local discipline = require("craftzdog.discipline")
+-- discipline.cowboy()
 
 local keymap = vim.keymap
 local opts = { noremap = true, silent = true }
 
--- Do things without affecting the registers
-keymap.set("n", "x", '"_x')
-keymap.set("n", "<Leader>p", '"0p')
-keymap.set("n", "<Leader>P", '"0P')
-keymap.set("v", "<Leader>p", '"0p')
-keymap.set("n", "<Leader>c", '"_c')
-keymap.set("n", "<Leader>C", '"_C')
-keymap.set("v", "<Leader>c", '"_c')
-keymap.set("v", "<Leader>C", '"_C')
-keymap.set("n", "<Leader>d", '"_d')
-keymap.set("n", "<Leader>D", '"_D')
-keymap.set("v", "<Leader>d", '"_d')
-keymap.set("v", "<Leader>D", '"_D')
-
 -- Increment/decrement
 keymap.set("n", "+", "<C-a>")
 keymap.set("n", "-", "<C-x>")
-
--- Delete a word backwards
-keymap.set("n", "dw", 'vb"_d')
-
--- Select all
-keymap.set("n", "<C-a>", "gg<S-v>G")
-
--- Save with root permission (not working for now)
---vim.api.nvim_create_user_command('W', 'w !sudo tee > /dev/null %', {})
-
--- Disable continuations
-keymap.set("n", "<Leader>o", "o<Esc>^Da", opts)
-keymap.set("n", "<Leader>O", "O<Esc>^Da", opts)
-
--- Jumplist
-keymap.set("n", "<C-m>", "<C-i>", opts)
 
 -- New tab
 keymap.set("n", "te", ":tabedit")
@@ -53,24 +22,34 @@ keymap.set("n", "sj", "<C-w>j")
 keymap.set("n", "sl", "<C-w>l")
 
 -- Resize window
-keymap.set("n", "<C-w><left>", "<C-w><")
-keymap.set("n", "<C-w><right>", "<C-w>>")
-keymap.set("n", "<C-w><up>", "<C-w>+")
-keymap.set("n", "<C-w><down>", "<C-w>-")
+keymap.set("n", "<C-left>", "<C-w><")
+keymap.set("n", "<C-right>", "<C-w>>")
+keymap.set("n", "<C-up>", "<C-w>+")
+keymap.set("n", "<C-down>", "<C-w>-")
 
--- Diagnostics
-keymap.set("n", "<C-j>", function()
-	vim.diagnostic.goto_next()
-end, opts)
+-- Move lines
+keymap.set("n", "<C-j>", ":m .+1<CR>==", opts)
+keymap.set("n", "<C-k>", ":m .-2<CR>==", opts)
+keymap.set({ "v", "s" }, "<C-j>", ":m '>+1<CR>gv=gv", opts)
+keymap.set({ "v", "s" }, "<C-k>", ":m '<-2<CR>gv=gv", opts)
 
-keymap.set("n", "<leader>r", function()
-	require("craftzdog.hsl").replaceHexWithHSL()
-end)
+keymap.set("n", "<leader>rc", function()
+    require("craftzdog.hsl").replaceHexWithHSL()
+end, { desc = "Replace Hex with HSL" })
 
 keymap.set("n", "<leader>i", function()
-	require("craftzdog.lsp").toggleInlayHints()
-end)
+    require("craftzdog.lsp").toggleInlayHints()
+end, { desc = "Toggle inlay hints" })
 
 vim.api.nvim_create_user_command("ToggleAutoformat", function()
-	require("craftzdog.lsp").toggleAutoformat()
+    require("craftzdog.lsp").toggleAutoformat()
 end, {})
+
+keymap.set("n", "<leader>xo", function()
+    local current = vim.api.nvim_get_current_buf()
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        if buf ~= current and vim.api.nvim_buf_is_loaded(buf) then
+            vim.api.nvim_buf_delete(buf, { force = false })
+        end
+    end
+end, { desc = "Close all buffers except current" })

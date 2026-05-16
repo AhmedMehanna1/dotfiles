@@ -56,3 +56,6 @@ vim.filetype.add({
 vim.g.lazyvim_prettier_needs_config = true
 vim.g.lazyvim_picker = "telescope"
 vim.g.lazyvim_cmp = "blink.cmp"
+
+-- Optional: map Java major versions to JAVA_HOME paths, e.g. { ["21"] = "/path/to/jdk-21" }
+vim.g.java_home_map = vim.g.java_home_map or {}

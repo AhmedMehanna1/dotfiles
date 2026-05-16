@@ -3,7 +3,7 @@ return {
 	{
 		"mason-org/mason.nvim",
 		opts = function(_, opts)
-			vim.list_extend(opts.ensure_installed, {
+				vim.list_extend(opts.ensure_installed, {
 				"stylua",
 				"selene",
 				"luacheck",
@@ -12,9 +12,14 @@ return {
 				"tailwindcss-language-server",
 				"typescript-language-server",
 				"css-lsp",
-			})
-		end,
-	},
+				-- java
+				"jdtls",
+				"lemminx",
+				"groovy-language-server",
+					"kotlin-language-server",
+				})
+			end,
+		},
 
 	-- lsp servers
 	{
@@ -144,8 +149,15 @@ return {
 				{
 					"gd",
 					function()
-						-- DO NOT RESUSE WINDOW
-						require("telescope.builtin").lsp_definitions({ reuse_win = false })
+						local actions = require("telescope.actions")
+						require("telescope.builtin").lsp_definitions({
+							reuse_win = false,
+							jump_type = "tab",
+							attach_mappings = function(prompt_bufnr)
+								actions.select_default:replace(actions.select_tab)
+								return true
+							end,
+						})
 					end,
 					desc = "Goto Definition",
 					has = "definition",
