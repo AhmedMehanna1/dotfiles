@@ -22,10 +22,10 @@ keymap.set("n", "sj", "<C-w>j")
 keymap.set("n", "sl", "<C-w>l")
 
 -- Resize window
-keymap.set("n", "<C-left>", "<C-w><")
-keymap.set("n", "<C-right>", "<C-w>>")
-keymap.set("n", "<C-up>", "<C-w>+")
-keymap.set("n", "<C-down>", "<C-w>-")
+keymap.set({ "n", "t" }, "<A-l>", "<cmd>vertical resize -1<cr>", { desc = "Decrease window width" })
+keymap.set({ "n", "t" }, "<A-h>", "<cmd>vertical resize +1<cr>", { desc = "Increase window width" })
+keymap.set({ "n", "t" }, "<A-j>", "<cmd>resize +1<cr>", { desc = "Increase window height" })
+keymap.set({ "n", "t" }, "<A-k>", "<cmd>resize -1<cr>", { desc = "Decrease window height" })
 
 -- Move lines
 keymap.set("n", "<C-j>", ":m .+1<CR>==", opts)

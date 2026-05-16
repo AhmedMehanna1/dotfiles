@@ -127,27 +127,6 @@ return {
                 end,
                 desc = "Java Run",
             },
-            {
-                "<leader>xt",
-                function()
-                    if vim.g.snacks_terminal ~= false and _G.Snacks and Snacks.terminal then
-                        Snacks.terminal.open(nil, { win = { position = "bottom", height = 15 } })
-                        return
-                    end
-                    vim.cmd("botright split | resize 15 | terminal")
-                end,
-                desc = "Terminal (Bottom)",
-            },
-            {
-                "<leader>xo",
-                function()
-                    if require("util.workspace").focus_terminal() then
-                        return
-                    end
-                    vim.cmd("wincmd j")
-                end,
-                desc = "Focus Terminal",
-            },
         },
     },
 }
