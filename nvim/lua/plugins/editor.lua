@@ -202,7 +202,8 @@ return {
                         grouped = true,
                         previewer = false,
                         initial_mode = "normal",
-                        layout_config = { height = 40 },
+                        theme = "ivy",
+                        layout_config = { height = 40, width = 0.95 },
                     })
                 end,
                 desc = "Open File Browser with the path of the current buffer",
@@ -219,7 +220,8 @@ return {
                         grouped = true,
                         previewer = false,
                         initial_mode = "normal",
-                        layout_config = { height = 40 },
+                        theme = "ivy",
+                        layout_config = { height = 40, width = 0.95 },
                     })
                 end,
                 desc = "RenameFile – Open file browser to rename current file",
@@ -232,8 +234,8 @@ return {
 
             opts.defaults = vim.tbl_deep_extend("force", opts.defaults, {
                 wrap_results = true,
-                layout_strategy = "horizontal",
-                layout_config = { prompt_position = "top" },
+                layout_strategy = "flex",
+                layout_config = { prompt_position = "top", width = 0.95 },
                 sorting_strategy = "ascending",
                 winblend = 0,
                 mappings = {
@@ -248,11 +250,18 @@ return {
                         preview_cutoff = 9999,
                     },
                 },
+                file_browser = {
+                    layout_config = {
+                        width = 0.95,
+                        preview_cutoff = 9999,
+                    },
+                },
             }
             opts.extensions = {
                 file_browser = {
-                    theme = "dropdown",
+                    theme = "ivy",
                     hijack_netrw = true,
+                    layout_config = { width = 0.95 },
                     mappings = {
                         ["n"] = {
                             ["N"] = fb_actions.create,
@@ -296,14 +305,14 @@ return {
                 function()
                     require("close_buffers").delete({ type = "hidden" })
                 end,
-                "Close Hidden Buffers",
+                desc = "Close Hidden Buffers",
             },
             {
                 "<leader>tu",
                 function()
                     require("close_buffers").delete({ type = "nameless" })
                 end,
-                "Close Nameless Buffers",
+                desc = "Close Nameless Buffers",
             },
         },
     },

@@ -12,7 +12,7 @@ return {
                         prompt_title = "Find Class",
                     })
                 end,
-                desc = "Find Class",
+                desc = "GotoClass – Lists class/struct symbols, falls back to Treesitter",
             },
 
             -- File structure / outline
