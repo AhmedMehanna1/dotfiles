@@ -13,7 +13,7 @@ return {
     },
     keys = {
       { "s", false },
-      
+      {
         "A-s",
         mode = { "n", "x", "o" },
         function()
