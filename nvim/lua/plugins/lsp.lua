@@ -35,6 +35,10 @@ return {
         "json-lsp",
         "yaml-language-server",
         "taplo",
+        -- python
+        "pyright",
+        "ruff",
+        "debugpy",
       })
     end,
   },
@@ -172,6 +176,14 @@ return {
                 },
               },
             },
+          },
+        },
+        pyright = {
+          disableOrganizeImports = true, -- let ruff handle imports
+        },
+        python = {
+          analysis = {
+            typeCheckingMode = "basic",
           },
         },
       },
