@@ -1,3 +1,5 @@
+.private-profile
 .idea
 ./shared
 ./logs
+.env
