@@ -21,6 +21,15 @@ keymap.set("n", "sk", "<C-w>k")
 keymap.set("n", "sj", "<C-w>j")
 keymap.set("n", "sl", "<C-w>l")
 
+-- Comment toggle + cursor to next line
+keymap.set("n", "<leader>/", "gccj", { desc = "Toggle comment line & go down", remap = true, silent = true })
+keymap.set("v", "<leader>/", function()
+    vim.cmd("normal gc")
+    local end_line = vim.fn.line("'>")
+    vim.api.nvim_win_set_cursor(0, { end_line + 1, 0 })
+end, { desc = "Toggle comment selection & go to next line", silent = true })
+keymap.set("i", "<leader>/", "<Esc>gccj", { desc = "Toggle comment line & go down", remap = true, silent = true })
+
 -- Resize window
 keymap.set({ "n", "t" }, "<A-l>", "<cmd>vertical resize -1<cr>", { desc = "Decrease window width" })
 keymap.set({ "n", "t" }, "<A-h>", "<cmd>vertical resize +1<cr>", { desc = "Increase window width" })

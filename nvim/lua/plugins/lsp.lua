@@ -167,15 +167,50 @@ return {
 				{
 					"gd",
 					function()
-						local actions = require("telescope.actions")
-						require("telescope.builtin").lsp_definitions({
-							reuse_win = false,
-							jump_type = "tab",
-							attach_mappings = function(prompt_bufnr)
-								actions.select_default:replace(actions.select_tab)
-								return true
-							end,
-						})
+						local params = vim.lsp.util.make_position_params()
+						vim.lsp.buf_request(0, "textDocument/definition", params, function(err, result)
+							if err then
+								vim.notify("Error: " .. err.message, vim.log.levels.ERROR)
+								return
+							end
+							if not result or vim.tbl_isempty(result) then
+								vim.notify("No definition found", vim.log.levels.WARN)
+								return
+							end
+							local target = vim.tbl_islist(result) and result[1] or result
+							local target_uri = target.uri or target.targetUri
+							local target_path = vim.uri_to_fname(target_uri)
+							-- Search all windows/tabs for already-open file
+							for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
+								for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
+									local buf = vim.api.nvim_win_get_buf(win)
+									local buf_path = vim.api.nvim_buf_get_name(buf)
+									if buf_path == target_path then
+										vim.api.nvim_set_current_tabpage(tab)
+										vim.api.nvim_set_current_win(win)
+										-- Move cursor to definition line
+										local range = target.range or target.targetSelectionRange
+										if range then
+											vim.api.nvim_win_set_cursor(win, {
+												range.start.line + 1,
+												range.start.character,
+											})
+										end
+										return
+									end
+								end
+							end
+							-- Not open anywhere: open in new tab
+							vim.cmd("tabnew " .. vim.fn.fnameescape(target_path))
+							-- Move cursor to definition line
+							local range = target.range or target.targetSelectionRange
+							if range then
+								vim.api.nvim_win_set_cursor(0, {
+									range.start.line + 1,
+									range.start.character,
+								})
+							end
+						end)
 					end,
 					desc = "Goto Definition",
 					has = "definition",
