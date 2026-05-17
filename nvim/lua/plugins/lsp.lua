@@ -16,7 +16,25 @@ return {
 				"jdtls",
 				"lemminx",
 				"groovy-language-server",
-					"kotlin-language-server",
+				"kotlin-language-server",
+				-- rust
+				"rust-analyzer",
+				"codelldb",
+				-- go
+				"gopls",
+				"gofumpt",
+				"golangci-lint",
+				"delve",
+				-- c / c++
+				"clangd",
+				"clang-format",
+				-- angular
+				"angular-language-server",
+				-- html / json / xml / yaml / toml
+				"html-lsp",
+				"json-lsp",
+				"yaml-language-server",
+				"taplo",
 				})
 			end,
 		},

@@ -3,3 +3,7 @@
 ./shared
 ./logs
 .env
+.classpath
+.factorypath
+.project
+.settings/
