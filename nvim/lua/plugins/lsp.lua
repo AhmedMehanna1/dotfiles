@@ -162,6 +162,7 @@ return {
                 format = {
                   enabled = true,
                   splitAttributes = "alignWithFirstAttr", -- keeps multi-attr tags split across lines
+                  --splitAttributes = "preserve", -- keeps multi-attr tags split across lines
                   preservedNewlines = 2, -- allows up to 2 empty lines to be kept
                   joinContentLines = false,
                   joinCommentLines = false,

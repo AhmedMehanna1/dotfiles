@@ -133,13 +133,14 @@ return {
         end,
         desc = "Buffers",
       },
-      -- {
-      --     "<leader>/",
-      --     function()
-      --         Snacks.picker.grep()
-      --     end,
-      --     desc = "Grep",
-      -- },
+      {
+        "<leader>/",
+        false,
+        -- function()
+        --     Snacks.picker.grep()
+        -- end,
+        -- desc = "Grep",
+      },
       {
         "<leader>:",
         function()
