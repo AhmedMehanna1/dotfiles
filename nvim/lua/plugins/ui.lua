@@ -82,10 +82,25 @@ return {
             },
             picker = {
                 enabled = true,
+                sources = {
+                    explorer = { jump = { close = true } },
+                },
                 layout = {
-                    width = function()
-                        return vim.o.columns > 100 and 0.8 or 0.95
-                    end,
+                    layout = {
+                        box = "horizontal",
+                        width = function()
+                            return vim.o.columns > 100 and 0.8 or 0.95
+                        end,
+                        height = 0.8,
+                        border = true,
+                        title = "{title} {live} {flags}",
+                        {
+                            box = "vertical",
+                            { win = "input", height = 1, border = "bottom" },
+                            { win = "list", border = "none" },
+                        },
+                        { win = "preview", title = "{preview}", width = 0.5, border = "left" },
+                    },
                 },
             },
             quickfile = { enabled = true },
