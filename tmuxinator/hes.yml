@@ -1,4 +1,4 @@
-# /home/ahmed-mehanna/.config/tmuxinator/pgw.yml
+# /home/ahmed-mehanna/.config/tmuxinator/hes.yml
 
 name: hes
 root: ~/git/hes-refactor/
@@ -18,3 +18,4 @@ windows:
         - ping 10.68.252.7
         - ping 10.68.252.1
         - ping 10.123.245.128
+        - ping 10.68.252.3

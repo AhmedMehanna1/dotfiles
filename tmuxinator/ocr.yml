@@ -1,0 +1,10 @@
+---
+name: ocr
+project_root: "/home/ahmed-mehanna/git/orange/identity-ocr/ocr-test"
+windows:
+  - zsh:
+      layout: a866,192x50,0,0[192x35,0,0,22,192x14,0,36{96x14,0,36,24,95x14,97,36,25}]
+      panes:
+        - cd /home/ahmed-mehanna/git/orange/identity-ocr/ocr-test
+        - cd /home/ahmed-mehanna/git/orange/identity-ocr/ocr-test
+        - cd /home/ahmed-mehanna/git/orange/identity-ocr/ocr-test
