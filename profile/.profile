@@ -10,6 +10,7 @@ export GO_HOME="/usr/bin/local/go"
 PATH=$PATH:$GO_HOME/bin
 
 export JAVA_8="/opt/jdk1.8.0_202"
+export JAVA_17="/opt/jdk-17.0.12"
 export JAVA_19="/opt/jdk-19.0.2"
 export JAVA_21="/opt/jdk-21.0.6"
 export JAVA_24="/opt/jdk-24"
@@ -46,5 +47,9 @@ export DOCKER_HOST=unix:///var/run/docker.sock
 
 export NOTES=$HOME
 #export XDG_CONFIG_HOME=$HOME
+
+export TODO_DIR="$HOME/.tuxedo"
+export TODO_FILE="$TODO_DIR/todo.txt"
+export DONE_FILE="$TODO_DIR/done.txt"
 
 source ~/.private-profile

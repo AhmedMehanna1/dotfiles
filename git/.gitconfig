@@ -41,7 +41,9 @@
   a = "!git status --short | peco | awk '{print $2}' | xargs git add"
   d = diff
   co = checkout
+  c = commit
   ci = commit
+  cm = commit -m
   ca = commit -a
   ps = "!f() { git push ${1:-origin} $(git rev-parse --abbrev-ref HEAD); }; f"
   pl = "!f() { git pull ${1:-origin} $(git rev-parse --abbrev-ref HEAD); }; f"
@@ -51,8 +53,8 @@
   bm = branch --merged
   bn = branch --no-merged
   df = "!git hist | peco | awk '{print $2}' | xargs -I {} git diff {}^ {}"
-  hist = log --pretty=format:\"%Cgreen%h %Creset%cd %Cblue[%cn] %Creset%s%C(yellow)%d%C(reset)\" --graph --date=relative --decorate --all
-  llog = log --graph --name-status --pretty=format:\"%C(red)%h %C(reset)(%cd) %C(green)%an %Creset%s %C(yellow)%d%Creset\" --date=relative
+  hist = log --pretty=format:\"%Cgreen%h %Creset%cd %Cblue[%cn] %Creset%s%C(yellow)%d%C(reset)\" --graph --date=iso --decorate --all
+  llog = log --graph --name-status --pretty=format:\"%C(red)%h %C(reset)(%cd) %C(green)%an %Creset%s %C(yellow)%d%Creset\" --date=iso
   open = "!hub browse"
   type = cat-file -t
   dump = cat-file -p

@@ -29,6 +29,7 @@ vnoremap <silent> <C-j> :m '>+1<CR>gv=gv
 vnoremap <silent> <C-k> :m '<-2<CR>gv=gv
 
 " File Navigation
+nnoremap <Space>fa :action GotoFile<CR>
 nnoremap <Space>ff :action GotoFile<CR>
 nnoremap <Space>fs :action FindInPath<CR>
 nnoremap <Space>fc :action GotoClass<CR>
