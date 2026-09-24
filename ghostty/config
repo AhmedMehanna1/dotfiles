@@ -1,0 +1,21 @@
+#theme = "Solarized Dark - Patched"
+#theme = catppuccin-mocha
+theme = tokyo-night
+
+background-opacity = 0.9
+background-blur-radius = 20
+#background = #031219
+
+# font-family = "PlemolJP Console NF"
+font-family = "VictorMono Nerd Font"
+font-size = 12
+
+cursor-style = block
+cursor-style-blink = true
+
+#keybind = global:cmd+ctrl+shift+j=toggle_visibility
+
+macos-option-as-alt = left
+keybind = alt+left=unbind
+keybind = alt+right=unbind
+theme = tokyonight
