@@ -47,6 +47,8 @@
   ca = commit -a
   ps = "!f() { git push ${1:-origin} $(git rev-parse --abbrev-ref HEAD); }; f"
   pl = "!f() { git pull ${1:-origin} $(git rev-parse --abbrev-ref HEAD); }; f"
+  sw = switch
+  swc = switch -c
   st = status
   br = branch
   ba = branch -a
