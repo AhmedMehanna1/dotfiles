@@ -1,20 +1,30 @@
-set number
-set relativenumber
-set tabstop=4
-set shiftwidth=4
-set expandtab
-set autoindent
-set ignorecase
-set smartcase
-set cursorline
-set clipboard="unnamedplus"
-set noswapfile
+" Plugin-free Vim for servers / sudo edits. Daily driver is Neovim (~/.config/nvim).
+" Leader keys mirror ~/.ideavimrc and the Neovim config where Vim can do them alone.
+set nocompatible
+filetype plugin indent on
+syntax on
 
-set scrolloff=5
+set number relativenumber cursorline scrolloff=5 signcolumn=yes
+set tabstop=4 shiftwidth=4 expandtab autoindent
+set ignorecase smartcase incsearch hlsearch
+set noswapfile hidden splitright splitbelow
+set wildmenu wildmode=longest:full,full wildignore+=*/target/*,*/.git/*,*.o
+set path=.,** clipboard=unnamedplus mouse=a
+set backspace=indent,eol,start laststatus=2
+if executable('rg') | set grepprg=rg\ --vimgrep grepformat=%f:%l:%c:%m | endif
 
-set incsearch
+let mapleader = ' '
+let g:netrw_banner = 0
 
-map Q gq
+nnoremap <Leader>ff :find<Space>
+nnoremap <Leader>fs :grep<Space>
+nnoremap <Leader>fb :ls<CR>:buffer<Space>
+nnoremap <Leader>fr :browse oldfiles<CR>
+nnoremap <Leader>ee :Explore<CR>
+nnoremap <Leader>sv :vsplit<CR>
+nnoremap <Leader>sh :split<CR>
+nnoremap <Leader>cc :make<CR>:cwindow<CR>
+nnoremap <Leader>xo :%bdelete<Bar>edit#<Bar>bdelete#<CR>
 
 nnoremap <silent> <C-j> :m .+1<CR>==
 nnoremap <silent> <C-k> :m .-2<CR>==
@@ -22,20 +32,5 @@ inoremap <silent> <C-j> <Esc>:m .+1<CR>==gi
 inoremap <silent> <C-k> <Esc>:m .-2<CR>==gi
 vnoremap <silent> <C-j> :m '>+1<CR>gv=gv
 vnoremap <silent> <C-k> :m '<-2<CR>gv=gv
-
-" Initialize Vim-Plug
-call plug#begin('~/.vim/plugged')  " On Unix/Linux/macOS
-" call plug#begin('~/vimfiles/plugged')  " On Windows  
-
-" Highlight copied text
-Plug 'machakann/vim-highlightedyank'
-" Commentary plugin (use IntelliJ's built-in commenting instead)
-Plug 'tpope/vim-commentary'
-Plug 'ajmwagar/ideavim-easymotion'
-Plug 'tpope/vim-surround'          " Add/change/delete surroundings (quotes, brackets, etc.)
-Plug 'airblade/vim-gitgutter'      " Show Git diff signs in the gutter
-Plug 'preservim/nerdtree'          " File explorer (may not work fully in IdeaVim)
-Plug 'TheBlob42/idea-which-key'
-
-" Finalize plugin setup
-call plug#end()
+nnoremap <C-h> <C-w>h
+nnoremap <C-l> <C-w>l
